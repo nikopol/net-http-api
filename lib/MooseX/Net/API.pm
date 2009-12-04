@@ -1,13 +1,17 @@
 package MooseX::Net::API;
 
-use Carp;
 use URI;
-use HTTP::Request;
+use Carp;
 use Try::Tiny;
+use HTTP::Request;
+
+use Moose;
 use Moose::Exporter;
 use MooseX::Net::API::Error;
-use MooseX::Net::API::Role::Deserialize;
+use MooseX::Net::API::Meta::Class;
+use MooseX::Net::API::Meta::Method;
 use MooseX::Net::API::Role::Serialize;
+use MooseX::Net::API::Role::Deserialize;
 
 our $VERSION = '0.01';
 
@@ -30,6 +34,16 @@ my $reverse_content_type = {
 Moose::Exporter->setup_import_methods(
     with_caller => [qw/net_api_method net_api_declare/], );
 
+sub init_meta {
+    my ( $me, %options ) = @_;
+
+    my $for = $options{for_class};
+    Moose::Util::MetaRole::apply_metaclass_roles(
+        for_class       => $for,
+        metaclass_roles => ['MooseX::Net::API::Meta::Class'],
+    );
+}
+
 my ( $do_auth, $auth_method, $deserialize_method );
 
 sub net_api_declare {
@@ -39,18 +53,13 @@ sub net_api_declare {
 
     my $class = Moose::Meta::Class->initialize($caller);
 
-    if ( !$options{base_url} ) {
-        croak "base_url is missing in your api declaration";
-    }
-    else {
-        $class->add_attribute(
-            'api_base_url',
-            is      => 'ro',
-            isa     => 'Str',
-            lazy    => 1,
-            default => delete $options{base_url}
-        );
-    }
+    $class->add_attribute(
+        'api_base_url',
+        is      => 'rw',
+        isa     => 'Str',
+        lazy    => 1,
+        default => delete $options{base_url} || '',
+    );
 
     if ( !$options{format} ) {
         croak "format is missing in your api declaration";
@@ -180,37 +189,8 @@ sub net_api_method {
             my $format = $self->api_format();
             $url .= "." . $format if ( $self->api_format_mode() eq 'append' );
             my $uri = URI->new($url);
+            my $res = _request( $self, $format, \%options, $uri, \%args );
 
-            my $req;
-            my $method = $options{method};
-            if ( $method =~ /^(?:GET|DELETE)$/ || $options{params_in_url} ) {
-                $uri->query_form(%args);
-                $req = HTTP::Request->new( $method => $uri );
-            }
-            elsif ( $method =~ /^(?:POST|PUT)$/ ) {
-                $req = HTTP::Request->new( $method => $uri );
-                # XXX GNI
-                use JSON::XS;
-                $req->content( encode_json \%args );
-            }
-            else {
-                croak "$method is not defined";
-            }
-
-            # XXX check presence content type
-            $req->header( 'Content-Type' => $list_content_type->{$format} )
-                if $self->api_format_mode eq 'content-type';
-
-            if ($do_auth) {
-                if ($auth_method) {
-                    $req = $self->$auth_method($req);
-                }
-                else {
-                    $req = _do_authentication( $self, $req );
-                }
-            }
-
-            my $res          = $self->useragent->request($req);
             my $content_type = $res->headers->{"content-type"};
             $content_type =~ s/(;.+)$//;
 
@@ -249,6 +229,7 @@ sub net_api_method {
             %options,
         ),
     );
+    $class->_add_api_method($name);
 }
 
 sub _add_useragent {
@@ -275,6 +256,41 @@ sub _add_useragent {
         lazy    => 1,
         default => $code,
     );
+}
+
+sub _request {
+    my ( $self, $format, $options, $uri, $args ) = @_;
+
+    my $req;
+    my $method = $options->{method};
+    if ( $method =~ /^(?:GET|DELETE)$/ || $options->{params_in_url} ) {
+        $uri->query_form(%$args);
+        $req = HTTP::Request->new( $method => $uri );
+    }
+    elsif ( $method =~ /^(?:POST|PUT)$/ ) {
+        $req = HTTP::Request->new( $method => $uri );
+
+        # XXX proper serialisation
+        use JSON::XS;
+        $req->content( encode_json $args );
+    }
+    else {
+        croak "$method is not defined";
+    }
+
+    $req->header( 'Content-Type' => $list_content_type->{$format} )
+        if $self->api_format_mode eq 'content-type';
+
+    if ($do_auth) {
+        if ($auth_method) {
+            $req = $self->$auth_method($req);
+        }
+        else {
+            $req = _do_authentication( $self, $req );
+        }
+    }
+
+    return $self->useragent->request($req);
 }
 
 sub _do_authentication {
@@ -305,23 +321,6 @@ sub _do_deserialization {
     }
 }
 
-package MooseX::Net::API::Meta::Method;
-
-use Moose;
-extends 'Moose::Meta::Method';
-
-has description => ( is => 'ro', isa => 'Str' );
-has path        => ( is => 'ro', isa => 'Str', required => 1 );
-has method      => ( is => 'ro', isa => 'Str', required => 1 );
-has params      => ( is => 'ro', isa => 'ArrayRef', required => 0 );
-has required    => ( is => 'ro', isa => 'ArrayRef', required => 0 );
-
-sub new {
-    my $class = shift;
-    my %args  = @_;
-    $class->SUPER::wrap(@_);
-}
-
 1;
 
 __END__
@@ -338,6 +337,7 @@ MooseX::Net::API - Easily create client for net API
 
   # we declare an API, the base_url is http://exemple.com/api
   # the format is json and it will be happened to the query
+  # You can set base_url later, calling $my_obj->api_base_url('http://..')
   net_api_declare my_api => (
     base_url   => 'http://exemple.com/api',
     format     => 'json',
@@ -425,6 +425,23 @@ HTTP method (GET, POST, PUT, DELETE)
 =item B<path> [string]
 
 path of the query.
+
+If you defined your path and params like this
+
+  net_api_method user_comments => (
+    ...
+    path => '/user/$user/list/$date/',
+    params => [qw/user date foo bar/],
+    ...
+  );
+
+and you call
+
+  $obj->user_comments(user => 'franck', date => 'today', foo => 1, bar => 2);
+
+the url generetad will look like
+
+  /user/franck/list/today/?foo=1&bar=2
 
 =item B<params> [arrayref]
 
