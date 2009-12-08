@@ -1,5 +1,9 @@
 Revision history for Perl extension MooseX::Net::API
 
+0.03    Tue 08 Dec 2009 04:22:45 PM CET  
+        - move some code in roles
+        - add code to use catalyst in tests
+
 0.02    Tue 08 Dec 2009 10:36:03 AM CET  
         - api_base_url is optional
         - add tests to play with catalyst

@@ -14,7 +14,7 @@ with qw/
     MooseX::Net::API::Role::Serialize 
     MooseX::Net::API::Role::Deserialize/;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 my $list_content_type = {
     'json' => 'application/json',
