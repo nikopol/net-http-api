@@ -10,12 +10,24 @@ sub _to_json {
 }
 
 sub _to_yaml {
-    return Load $_[1];
+    return Dump $_[1];
 }
 
 sub _to_xml {
     my $xml = XML::Simple->new( ForceArray => 0 );
     $xml->XMLin("$_[0]");
+}
+
+sub _do_serialization {
+    my ( $caller, $content, $format ) = @_;
+
+    my $format_content;
+    my $method = '_to_' . $format;
+    return if ( !$caller->meta->find_method_by_name($method) );
+    try {
+        $format_content = $caller->$method($content);
+    };
+    return $format_content if $format_content;
 }
 
 1;
