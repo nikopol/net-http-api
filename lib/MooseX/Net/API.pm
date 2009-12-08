@@ -10,8 +10,9 @@ use Moose::Exporter;
 use MooseX::Net::API::Error;
 use MooseX::Net::API::Meta::Class;
 use MooseX::Net::API::Meta::Method;
-use MooseX::Net::API::Role::Serialize;
-use MooseX::Net::API::Role::Deserialize;
+with qw/
+    MooseX::Net::API::Role::Serialize 
+    MooseX::Net::API::Role::Deserialize/;
 
 our $VERSION = '0.02';
 
@@ -19,12 +20,6 @@ my $list_content_type = {
     'json' => 'application/json',
     'yaml' => 'text/x-yaml',
     'xml'  => 'text/xml',
-};
-my $reverse_content_type = {
-    'application/json'   => 'json',
-    'application/x-yaml' => 'yaml',
-    'text/xml'           => 'xml',
-    'application/xml'    => 'xml',
 };
 
 # XXX uri builder
@@ -176,19 +171,22 @@ sub net_api_method {
                 }
             }
 
+            my $path = $options{path};
+
             # replace all args in the url
-            while ( $options{path} =~ /\$(\w+)/ ) {
+            while ( $path =~ /\$(\w+)/ ) {
                 my $match = $1;
                 if ( my $value = delete $args{$match} ) {
-                    $options{path} =~ s/\$$match/$value/;
+                    $path =~ s/\$$match/$value/;
                 }
             }
 
             # XXX improve uri building
-            my $url    = $self->api_base_url . $options{path};
+            my $url    = $self->api_base_url . $path;
             my $format = $self->api_format();
             $url .= "." . $format if ( $self->api_format_mode() eq 'append' );
             my $uri = URI->new($url);
+
             my $res = _request( $self, $format, \%options, $uri, \%args );
 
             my $content_type = $res->headers->{"content-type"};
@@ -217,7 +215,7 @@ sub net_api_method {
         };
     }
     else {
-        $code = delete $options{code};
+        $code = $options{code};
     }
 
     $class->add_method(
@@ -263,16 +261,15 @@ sub _request {
 
     my $req;
     my $method = $options->{method};
+
     if ( $method =~ /^(?:GET|DELETE)$/ || $options->{params_in_url} ) {
         $uri->query_form(%$args);
         $req = HTTP::Request->new( $method => $uri );
     }
     elsif ( $method =~ /^(?:POST|PUT)$/ ) {
         $req = HTTP::Request->new( $method => $uri );
-
-        # XXX proper serialisation
-        use JSON::XS;
-        $req->content( encode_json $args );
+        my $content = _do_serialization($self, $args, $format);
+        $req->content( $content );
     }
     else {
         croak "$method is not defined";
@@ -299,26 +296,6 @@ sub _do_authentication {
         $caller->api_password )
         if ( $caller->api_username && $caller->api_password );
     return $req;
-}
-
-sub _do_deserialization {
-    my ( $caller, $raw_content, @content_types ) = @_;
-
-    my $content;
-    foreach my $deserializer (@content_types) {
-        my $method;
-        if ( $reverse_content_type->{$deserializer} ) {
-            $method = '_from_' . $reverse_content_type->{$deserializer};
-        }
-        else {
-            $method = '_from_' . $deserializer;
-        }
-        next if ( !$caller->meta->find_method_by_name($method) );
-        try {
-            $content = $caller->$method($raw_content);
-        };
-        return $content if $content;
-    }
 }
 
 1;

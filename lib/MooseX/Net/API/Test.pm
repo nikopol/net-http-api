@@ -9,6 +9,8 @@ use Moose::Exporter;
 use MooseX::Net::API::Meta::Class;
 use MooseX::Net::API::Meta::Method;
 
+with qw/MooseX::Net::API::Role::CatalystTest/;
+
 Moose::Exporter->setup_import_methods(
     with_caller => [qw/test_api_method test_api_declare run/] );
 
@@ -24,14 +26,6 @@ sub init_meta {
     );
 }
 
-my $list_content_type = {
-    'json' => 'application/json',
-    'yaml' => 'text/x-yaml',
-    'xml'  => 'text/xml',
-};
-
-my $tests_count = 0;
-
 sub test_api_declare {
     my $caller  = shift;
     my $name    = shift;
@@ -42,42 +36,6 @@ sub test_api_declare {
     }
 
     $api_to_test = $name;
-
-    if ( $options{catalyst} ) {
-        my $app = $options{catalyst_app_name};
-
-        Class::MOP::load_class("HTTP::Request");
-        Class::MOP::load_class("Catalyst::Test");
-
-        Catalyst::Test->import($app);
-
-        my $res = __PACKAGE__->meta->remove_method('_request');
-        MooseX::Net::API->meta->add_method(
-            '_request' => sub {
-                my ( $class, $format, $options, $uri, $args ) = @_;
-                my $method = $options->{method};
-
-                my $res;
-                if (   $method =~ /^(?:GET|DELETE)$/
-                    || $options->{params_in_url} )
-                {
-                    $uri->query_form(%$args);
-                    my $req = HTTP::Request->new( $method => $uri );
-                    $req->header(
-                        'Content-Type' => $list_content_type->{$format} );
-                    $res = request($req);
-                }
-                else {
-                    my $req = HTTP::Request->new( $method => $uri );
-                    $req->header(
-                        'Content-Type' => $list_content_type->{$format} );
-                    $req->header( 'Content' => Dump $args);
-                    $res = request($req);
-                }
-                return $res;
-            }
-        );
-    }
 }
 
 sub test_api_method {
