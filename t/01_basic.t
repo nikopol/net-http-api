@@ -29,4 +29,7 @@ throws_ok {
 }
 qr/foo is not declared as a param/, "... check declared params";
 
+ok my @methods = $obj->meta->local_api_methods(), '... get api methods';
+is scalar @methods, 3, '... got 3 methods in our API';
+
 done_testing;
