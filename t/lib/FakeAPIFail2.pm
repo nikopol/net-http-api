@@ -2,14 +2,12 @@ package FakeAPI;
 use Moose;
 use MooseX::Net::API;
 
-has api_base_url => (
-    is      => 'ro',
-    isa     => 'Str',
-    default => 'http://identi.ca/api',
+net_api_declare fake_api => (
+    base_url               => 'http://identi.ca/api',
+    format                 => 'json',
+    format_mode            => 'content-type',
+    require_authentication => 0,
 );
-
-has format => ( is => 'ro', isa => 'Str', default => 'json', );
-format_query 'format' => ( mode => 'content-type' );
 
 net_api_method baz => (
     description => 'this one does baztwo',

@@ -5,6 +5,8 @@ all_from 'lib/MooseX/Net/API.pm';
 requires 'Carp';
 requires 'Moose';
 requires 'Try::Tiny';
+requires 'URI';
+requires 'HTTP::Request';
 
 tests 't/*.t';
 author_tests 'xt';
