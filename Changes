@@ -1,5 +1,8 @@
 Revision history for Perl extension MooseX::Net::API
 
+0.05    Wed 09 Dec 2009 11:01:54 AM CET  
+        - missing try::tiny
+
 0.04    Wed 09 Dec 2009 10:58:04 AM CET  
         - some cleaning in roles
 
