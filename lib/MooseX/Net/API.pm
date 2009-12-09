@@ -10,9 +10,8 @@ use Moose::Exporter;
 use MooseX::Net::API::Error;
 use MooseX::Net::API::Meta::Class;
 use MooseX::Net::API::Meta::Method;
-with qw/
-    MooseX::Net::API::Role::Serialize 
-    MooseX::Net::API::Role::Deserialize/;
+use MooseX::Net::API::Role::Serialize;
+use MooseX::Net::API::Role::Deserialize;
 
 our $VERSION = '0.03';
 
@@ -23,8 +22,6 @@ my $list_content_type = {
 };
 
 # XXX uri builder
-# XXX encoding
-# XXX decoding
 
 Moose::Exporter->setup_import_methods(
     with_caller => [qw/net_api_method net_api_declare/], );
@@ -110,10 +107,18 @@ sub net_api_declare {
         $auth_method = delete $options{authentication_method};
     }
 
-    if ($options{deserialisation} ) {
+    if ( $options{deserialisation} ) {
         $deserialize_method = delete $options{deserialize_order};
-    }else{
-        MooseX::Net::API::Role::Deserialize->meta->apply($caller->meta);
+    }
+    else {
+        MooseX::Net::API::Role::Deserialize->meta->apply( $caller->meta );
+    }
+
+    if ( $options{serialisation} ) {
+        $deserialize_method = delete $options{serialize_order};
+    }
+    else {
+        MooseX::Net::API::Role::Serialize->meta->apply( $caller->meta );
     }
 }
 
@@ -201,7 +206,7 @@ sub net_api_method {
                     @deserialize_order );
             }
             else {
-                $content = _do_deserialization( $self, $res->content,
+                $content = $self->_do_deserialization( $res->content,
                     @deserialize_order );
             }
 
@@ -268,7 +273,7 @@ sub _request {
     }
     elsif ( $method =~ /^(?:POST|PUT)$/ ) {
         $req = HTTP::Request->new( $method => $uri );
-        my $content = _do_serialization($self, $args, $format);
+        my $content = $self->_do_serialization( $args, $format);
         $req->content( $content );
     }
     else {

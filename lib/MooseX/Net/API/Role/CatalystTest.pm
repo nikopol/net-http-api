@@ -1,6 +1,7 @@
 package MooseX::Net::API::Role::CatalystTest;
 
 use lib ('t/lib');
+
 use Moose::Role; with qw/
     MooseX::Net::API::Role::Serialize 
     MooseX::Net::API::Role::Deserialize/;
