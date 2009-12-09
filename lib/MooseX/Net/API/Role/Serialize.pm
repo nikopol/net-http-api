@@ -4,6 +4,7 @@ use Moose::Role;
 use JSON::XS;
 use YAML::Syck;
 use XML::Simple;
+use Try::Tiny;
 
 sub _to_json {
     return encode_json( $_[1] );
