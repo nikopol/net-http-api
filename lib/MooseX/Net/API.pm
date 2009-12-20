@@ -1,12 +1,12 @@
 package MooseX::Net::API;
 
 use URI;
-use Carp;
 use Try::Tiny;
 use HTTP::Request;
 
 use Moose;
 use Moose::Exporter;
+
 use MooseX::Net::API::Meta::Class;
 use MooseX::Net::API::Meta::Method;
 use MooseX::Net::API::Role::Serialize;
@@ -19,6 +19,8 @@ my $list_content_type = {
     'yaml' => 'text/x-yaml',
     'xml'  => 'text/xml',
 };
+
+my ( $do_auth, $base_url, $auth_method, $deserialize_method );
 
 Moose::Exporter->setup_import_methods(
     with_caller => [qw/net_api_method net_api_declare/], );
@@ -33,8 +35,6 @@ sub init_meta {
     );
 }
 
-my ( $do_auth, $auth_method, $deserialize_method );
-
 sub net_api_declare {
     my $caller  = shift;
     my $name    = shift;
@@ -44,18 +44,20 @@ sub net_api_declare {
 
     $class->add_attribute(
         'api_base_url',
-        is      => 'rw',
+        is      => 'ro',
         isa     => 'Str',
         lazy    => 1,
-        default => delete $options{base_url} || '',
+        default => delete $options{base_url} || ''
     );
 
     if ( !$options{format} ) {
-        croak "format is missing in your api declaration";
+        die MooseX::Net::API::Error->new(
+            reason => "format is missing in your api declaration" );
     }
     elsif ( !$list_content_type->{ $options{format} } ) {
-        croak "format is not recognised. It must be "
-            . join( " or ", keys %$list_content_type );
+        die MooseX::Net::API::Error->(
+            reason => "format is not recognised. It must be "
+                . join( " or ", keys %$list_content_type ) );
     }
     else {
         $class->add_attribute(
@@ -68,10 +70,11 @@ sub net_api_declare {
     }
 
     if ( !$options{format_mode} ) {
-        croak "format_mode is not set";
+        die MooseX::Net::API::Error->( reason => "format_mode is not set" );
     }
     elsif ( $options{format_mode} !~ /^(?:append|content\-type)$/ ) {
-        croak "format_mode must be append or content-type";
+        die MooseX::Net::API::Error->new(
+            reason => "format_mode must be append or content-type" );
     }
     else {
         $class->add_attribute(
@@ -89,7 +92,8 @@ sub net_api_declare {
     else {
         my $method = $options{useragent};
         if ( ref $method ne 'CODE' ) {
-            croak "useragent must be a CODE ref";
+            die MooseX::Net::API::Error->(
+                reason => "useragent must be a CODE ref" );
         }
         else {
             _add_useragent( $class, delete $options{useragent} );
@@ -100,6 +104,24 @@ sub net_api_declare {
         $do_auth = delete $options{authentication};
     }
 
+    if ( $options{username} ) {
+        $class->add_attribute(
+            'api_username',
+            is      => 'ro',
+            isa     => 'Str',
+            lazy    => 1,
+            default => delete $options{username}
+        );
+        if ( $options{password} ) {
+            $class->add_attribute(
+                'api_password',
+                is      => 'ro',
+                isa     => 'Str',
+                lazy    => 1,
+                default => delete $options{password}
+            );
+        }
+    }
     if ( $options{authentication_method} ) {
         $auth_method = delete $options{authentication_method};
     }
@@ -122,19 +144,20 @@ sub net_api_declare {
 sub net_api_method {
     my $caller  = shift;
     my $name    = shift;
-    my %options = (do_auth => $do_auth, @_);
+    my %options = ( authentication => $do_auth, @_ );
 
     if ( !$options{params} && $options{required} ) {
-        croak "you can't require a param that have not been declared";
+        die MooseX::Net::API::Error->new( reason =>
+                "you can't require a param that have not been declared" );
     }
 
     if ( $options{required} ) {
         foreach my $required ( @{ $options{required} } ) {
-            croak "$required is required but is not declared in params"
+            die MooseX::Net::API::Error->new( reason =>
+                    "$required is required but is not declared in params" )
                 if ( !grep { $_ eq $required } @{ $options{params} } );
         }
     }
-    # XXX check method ici
 
     my $class = Moose::Meta::Class->initialize($caller);
 
@@ -144,32 +167,36 @@ sub net_api_method {
             my $self = shift;
             my %args = @_;
 
-            if ( $auth_method
-                && !$self->meta->find_method_by_name($auth_method) )
-            {
-                croak
-                    "you provided $auth_method as an authentication method, but it's not available in your object";
+            my $meta = $self->meta;
+
+            if ( $auth_method && !$meta->find_method_by_name($auth_method) ) {
+                die MooseX::Net::API::Error->new( reason =>
+                        "you provided $auth_method as an authentication method, but it's not available in your object"
+                );
             }
 
             if ( $deserialize_method
-                && !$self->meta->find_method_by_name($deserialize_method) )
+                && !$meta->find_method_by_name($deserialize_method) )
             {
-                croak
-                    "you provided $deserialize_method for deserialisation, but the method is not available in your object";
+                die MooseX::Net::API::Error->new( reason =>
+                        "you provided $deserialize_method for deserialisation, but the method is not available in your object"
+                );
             }
 
             # check if there is no undeclared param
             foreach my $arg ( keys %args ) {
                 if ( !grep { $arg eq $_ } @{ $options{params} } ) {
-                    croak "$arg is not declared as a param";
+                    die MooseX::Net::API::Error->new(
+                        reason => "$arg is not declared as a param" );
                 }
             }
 
             # check if all our params declared as required are present
             foreach my $required ( @{ $options{required} } ) {
                 if ( !grep { $required eq $_ } keys %args ) {
-                    croak
-                        "$required is declared as required, but is not present";
+                    die MooseX::Net::API::Error->new( reason =>
+                            "$required is declared as required, but is not present"
+                    );
                 }
             }
 
@@ -190,6 +217,14 @@ sub net_api_method {
             my $uri = URI->new($url);
 
             my $res = _request( $self, $format, \%options, $uri, \%args );
+            if ( $options{expected} ) {
+                if ( !grep { $_ eq $res->code } @{ $options{expected} } ) {
+                    die MooseX::Net::API::Error->new(
+                        reason     => "unexpected code",
+                        http_error => $res
+                    );
+                }
+            }
 
             my $content_type = $res->headers->{"content-type"};
             $content_type =~ s/(;.+)$//;
@@ -209,7 +244,10 @@ sub net_api_method {
 
             return $content if ( $res->is_success );
 
-            croak $res->code." : ".$content;
+            die MooseX::Net::API::Error->new(
+                http_error => $res,
+                reason     => $content
+            );
         };
     }
     else {
@@ -235,7 +273,9 @@ sub _add_useragent {
     if ( !$code ) {
         try { require LWP::UserAgent; }
         catch {
-            croak "no useragent defined and LWP::UserAgent is not available";
+            MooseX::Net::API::Error->new( reason =>
+                    "no useragent defined and LWP::UserAgent is not available"
+            );
         };
 
         $code = sub {
@@ -246,7 +286,7 @@ sub _add_useragent {
         };
     }
     $class->add_attribute(
-        'useragent',
+        'api_useragent',
         is      => 'rw',
         isa     => 'Any',
         lazy    => 1,
@@ -266,17 +306,17 @@ sub _request {
     }
     elsif ( $method =~ /^(?:POST|PUT)$/ ) {
         $req = HTTP::Request->new( $method => $uri );
-        my $content = $self->_do_serialization( $args, $format);
-        $req->content( $content );
+        my $content = $self->_do_serialization( $args, $format );
+        $req->content($content);
     }
     else {
-        croak "$method is not defined";
+        die MooseX::Net::API::Error->new( reason => "$method is not defined" );
     }
 
     $req->header( 'Content-Type' => $list_content_type->{$format} )
         if $self->api_format_mode eq 'content-type';
 
-    if ($do_auth) {
+    if ($do_auth || $options->{authentication}) {
         if ($auth_method) {
             $req = $self->$auth_method($req);
         }
@@ -285,7 +325,7 @@ sub _request {
         }
     }
 
-    return $self->useragent->request($req);
+    return $self->api_useragent->request($req);
 }
 
 sub _do_authentication {
@@ -295,6 +335,16 @@ sub _do_authentication {
         if ( $caller->api_username && $caller->api_password );
     return $req;
 }
+
+package MooseX::Net::API::Error;
+
+use Moose;
+has http_error => (
+    is      => 'ro',
+    isa     => 'HTTP::Response',
+    handles => { http_message => 'message', http_code => 'code' }
+);
+has reason => ( is => 'ro', isa => 'Str|HashRef' );
 
 1;
 
