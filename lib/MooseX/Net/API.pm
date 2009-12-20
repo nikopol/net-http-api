@@ -12,7 +12,7 @@ use MooseX::Net::API::Meta::Method;
 use MooseX::Net::API::Role::Serialize;
 use MooseX::Net::API::Role::Deserialize;
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 my $list_content_type = {
     'json' => 'application/json',
@@ -409,6 +409,8 @@ MooseX::Net::API - Easily create client for net API
 
 MooseX::Net::API is module to help to easily create a client for a web API.
 This module is heavily inspired by what L<Net::Twitter> does.
+
+B<THIS MODULE IS IN ITS BETA QUALITY. THE API MAY CHANGE IN THE FUTURE>
 
 =head2 METHODS
 
