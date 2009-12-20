@@ -20,17 +20,16 @@ ok my @methods = $obj->meta->local_api_methods(), '... get api methods';
 is scalar @methods, 6, '... get 6 methods in our API';
 
 ok my $users = $obj->users(), "... get users list";
-is $users->[0]->{user}, "bruce wayne", "... get bruce wayne";
+is $users->{status}, 1, "... get users";
 
-ok my $user = $obj->get_user( id => $users->[0]->{id} ),
-    "... fetch bruce wayne informations";
-is $user->{user}, "bruce wayne", "... get bruce wayne";
+ok my $user = $obj->get_user( id => 1 ), "... fetch user";
+is $user->{status}, 1, "... get bruce wayne";
 
-dies_ok { $obj->get_user( id => 12 ) } "... can't fetch unknown user";
-my $err = $@;
-is $err->http_code, 404, "... get 404";
+#dies_ok { $obj->get_user( id => 12 ) } "... can't fetch unknown user";
+#my $err = $@;
+#is $err->http_code, 404, "... get 404";
 
-my $auth_obj = FakeAPI->new();
-my $res = $auth_obj->auth_get_user(id => 1);
+#my $auth_obj = FakeAPI->new();
+#my $res = $auth_obj->auth_get_user(id => 1);
 
 done_testing;
