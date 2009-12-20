@@ -7,7 +7,6 @@ use HTTP::Request;
 
 use Moose;
 use Moose::Exporter;
-use MooseX::Net::API::Error;
 use MooseX::Net::API::Meta::Class;
 use MooseX::Net::API::Meta::Method;
 use MooseX::Net::API::Role::Serialize;
@@ -20,8 +19,6 @@ my $list_content_type = {
     'yaml' => 'text/x-yaml',
     'xml'  => 'text/xml',
 };
-
-# XXX uri builder
 
 Moose::Exporter->setup_import_methods(
     with_caller => [qw/net_api_method net_api_declare/], );
@@ -212,11 +209,7 @@ sub net_api_method {
 
             return $content if ( $res->is_success );
 
-            my $error = MooseX::Net::API::Error->new(
-                code  => $res->code,
-                error => $content,
-            );
-            die $error;
+            croak $res->code." : ".$content;
         };
     }
     else {
@@ -319,7 +312,7 @@ MooseX::Net::API - Easily create client for net API
 
   # we declare an API, the base_url is http://exemple.com/api
   # the format is json and it will be happened to the query
-  # You can set base_url later, calling $my_obj->api_base_url('http://..')
+  # You can set base_url later, calling $obj->api_base_url('http://..')
   net_api_declare my_api => (
     base_url   => 'http://exemple.com/api',
     format     => 'json',
@@ -358,6 +351,10 @@ MooseX::Net::API - Easily create client for net API
 
   1;
 
+  my $obj = My::Net::API->new();
+  $obj->api_base_url('http://...');
+  $obj->foo(user => $user);
+
 =head1 DESCRIPTION
 
 MooseX::Net::API is module to help to easily create a client for a web API.
@@ -369,26 +366,58 @@ This module is heavily inspired by what L<Net::Twitter> does.
 
 =item B<net_api_declare>
 
+  net_api_declare backtype => (
+    base_url    => 'http://api....',
+    format      => 'json',
+    format_mode => 'append',
+  );
+
 =over 2
 
 =item B<base_url> (required)
 
-The base url for all the API's calls.
+The base url for all the API's calls. This will add an B<api_base_url>
+attribut to your class.
 
 =item B<format> (required, must be either xml, json or yaml)
 
-The format for the API's calls.
+The format for the API's calls. This will add an B<api_format> attribut to
+your class.
 
 =item B<format_mode> (required, must be 'append' or 'content-type')
 
-How the format is handled. Append will add B<.json> to the query, content-type
-will add the content-type information to the request header.
+How the format is handled. B<append> will add B<.json> to the query,
+B<content-type> will add the content-type information to the header of the
+request.
 
 =item B<useragent> (optional, by default it's a LWP::UserAgent object)
 
-=item B<authentication> (optional)
+  useragent => sub {
+    my $ua = LWP::UserAgent->new;
+    $ua->agent( "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.1) Gecko/20061204 Firefox/2.0.0.1");
+     return $ua;
+  },
 
 =item B<authentication> (optional)
+
+This is a boolean to tell if we must authenticate to use this API.
+
+=item B<authentication_method> (optional)
+
+The default authentication method only set an authorization header using the
+Basic Authentication Scheme. You can write your own authentication method:
+
+  net_api_declare foo => (
+    ...
+    authentication_method => 'my_auth_method',
+    ...
+  );
+
+  sub my_auth_method {
+    my ($self, $req) = @_; #$req is an HTTP::Request object
+    ...
+    return $req;
+  }
 
 =back
 
