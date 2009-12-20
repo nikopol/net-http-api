@@ -1,5 +1,4 @@
 use strict;
-use Test::More;
+use Test::More tests => 1;
 
-# XXX pourquoi il meurt ?
-BEGIN { plan skip_all => "moooose"; use_ok 'MooseX::Net::API'; use_ok 'MooseX::Net::API::Test' }
+BEGIN { use Moose; use_ok 'MooseX::Net::API'; }
