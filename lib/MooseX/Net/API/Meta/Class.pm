@@ -13,15 +13,6 @@ has local_api_methods => (
     auto_deref => 1,
     handles    => { '_add_api_method' => 'push' },
 );
-has local_api_test_methods => (
-    traits     => ['Array'],
-    is         => 'ro',
-    isa        => ArrayRef [Str],
-    required   => 1,
-    default    => sub { [] },
-    auto_deref => 1,
-    handles    => { '_add_api_test_method' => 'push' },
-);
 
 sub _build_meta_class {
     my $self = shift;
