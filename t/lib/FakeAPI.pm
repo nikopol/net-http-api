@@ -3,7 +3,7 @@ use Moose;
 use MooseX::Net::API;
 
 net_api_declare demorest => (
-    base_url       => 'http://localhost:3000/rest',
+    base_url       => 'http://lumberjaph.net/demorest/rest',
     format         => 'json',
     format_mode    => 'content-type',
     authentication => 0,
