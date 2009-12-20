@@ -2,37 +2,63 @@ package FakeAPI;
 use Moose;
 use MooseX::Net::API;
 
-net_api_declare fake_api => (
-    base_url               => 'http://identi.ca/api',
-    format                 => 'json',
-    format_mode            => 'append',
-    require_authentication => 0,
+net_api_declare demorest => (
+    base_url       => 'http://localhost:3000/rest',
+    format         => 'json',
+    format_mode    => 'content-type',
+    authentication => 0,
+    username       => 'foo',
+    password       => 'bar',
 );
 
-net_api_method foo => (
-    description => 'this does foo',
+net_api_method users => (
+    description => 'get a list of users',
     method      => 'GET',
-    path        => '/foo/',
-    code        => sub { my $self = shift; $self->get_foo },
-    params      => [qw/bar/],
+    path        => '/users/',
+    expected    => [qw/200/],
 );
 
-net_api_method bar => (
-    description => 'this does bar',
+net_api_method get_user => (
+    description => 'fetch information about a specific user',
     method      => 'GET',
-    path        => '/bar/',
-    params      => [qw/bar baz/],
-    required    => [qw/baz/],
+    path        => '/user/$id',
+    params      => [qw/id/],
+    required    => [qw/id/],
+    expected    => [qw/200 404/],
 );
 
-net_api_method baz => (
-    description => 'this one does baztwo',
-    method      => 'BAZ',
-    path        => '/baz/',
-    params      => [qw/foo bla/],
-    required    => [qw/bla/],
+net_api_method create_user => (
+    description => 'create a new user',
+    method      => 'POST',
+    path        => '/user/',
+    params      => [qw/user nickname/],
+    required    => [qw/user nickname/],
 );
 
-sub get_foo { return 1; }
+net_api_method update_user => (
+    description => 'update information about a specific user',
+    method      => 'PUT',
+    path        => '/user/$id',
+    params      => [qw/id nickname/],
+    required    => [qw/id nickname/],
+);
+
+net_api_method delete_user => (
+    description => 'terminate an user',
+    method      => 'DELETE',
+    path        => '/user/$id',
+    params      => [qw/id/],
+    required    => [qw/id/],
+);
+
+net_api_method auth_get_user => (
+    description => 'fetch information about a specific user with authentication',
+    method         => 'GET',
+    path           => '/auth_user/$id',
+    params         => [qw/id/],
+    required       => [qw/id/],
+    expected       => [qw/200 404/],
+    authentication => 1,
+);
 
 1;
