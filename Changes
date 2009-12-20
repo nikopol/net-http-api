@@ -1,5 +1,8 @@
 Revision history for Perl extension MooseX::Net::API
 
+0.06    Sun 20 Dec 2009 05:17:49 PM CET  
+        - mainly cleaning and POD
+
 0.05    Wed 09 Dec 2009 11:01:54 AM CET  
         - missing try::tiny
 

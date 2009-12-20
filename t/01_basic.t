@@ -31,12 +31,6 @@ my $err = $@;
 is $err->http_code, 404, "... get 404";
 
 my $auth_obj = FakeAPI->new();
-use Try::Tiny;
-use YAML::Syck;
-try {
-    my $res = $auth_obj->auth_get_user(id => 1);
-}catch{
-    warn Dump $_;
-};
+my $res = $auth_obj->auth_get_user(id => 1);
 
 done_testing;
