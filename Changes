@@ -1,5 +1,8 @@
 Revision history for Perl extension MooseX::Net::API
 
+0.07    Mon 04 Jan 2010 11:50:22 AM CET  
+        - fix error reporting
+
 0.06    Sun 20 Dec 2009 05:17:49 PM CET  
         - mainly cleaning and POD
 
