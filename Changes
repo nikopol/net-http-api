@@ -1,5 +1,8 @@
 Revision history for Perl extension MooseX::Net::API
 
+0.08    Mon 04 Jan 2010 05:58:56 PM CET  
+        - api_base_url is not read-only
+        
 0.07    Mon 04 Jan 2010 11:50:22 AM CET  
         - fix error reporting
 
