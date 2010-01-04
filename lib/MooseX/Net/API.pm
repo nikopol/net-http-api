@@ -55,7 +55,7 @@ sub net_api_declare {
             reason => "format is missing in your api declaration" );
     }
     elsif ( !$list_content_type->{ $options{format} } ) {
-        die MooseX::Net::API::Error->(
+        die MooseX::Net::API::Error->new(
             reason => "format is not recognised. It must be "
                 . join( " or ", keys %$list_content_type ) );
     }
@@ -70,7 +70,7 @@ sub net_api_declare {
     }
 
     if ( !$options{format_mode} ) {
-        die MooseX::Net::API::Error->( reason => "format_mode is not set" );
+        die MooseX::Net::API::Error->new( reason => "format_mode is not set" );
     }
     elsif ( $options{format_mode} !~ /^(?:append|content\-type)$/ ) {
         die MooseX::Net::API::Error->new(
@@ -92,7 +92,7 @@ sub net_api_declare {
     else {
         my $method = $options{useragent};
         if ( ref $method ne 'CODE' ) {
-            die MooseX::Net::API::Error->(
+            die MooseX::Net::API::Error->new(
                 reason => "useragent must be a CODE ref" );
         }
         else {
@@ -273,7 +273,7 @@ sub _add_useragent {
     if ( !$code ) {
         try { require LWP::UserAgent; }
         catch {
-            MooseX::Net::API::Error->new( reason =>
+            die MooseX::Net::API::Error->new( reason =>
                     "no useragent defined and LWP::UserAgent is not available"
             );
         };
@@ -339,12 +339,22 @@ sub _do_authentication {
 package MooseX::Net::API::Error;
 
 use Moose;
+use overload '""' => \&error;
+
 has http_error => (
     is      => 'ro',
     isa     => 'HTTP::Response',
     handles => { http_message => 'message', http_code => 'code' }
 );
-has reason => ( is => 'ro', isa => 'Str|HashRef' );
+has reason => ( is => 'ro', isa => 'Str|HashRef', predicate => 'has_reason' );
+
+sub error {
+    my $self = shift;
+    return
+           ( $self->has_reason && $self->reason )
+        || ( $self->http_message . ": " . $self->http_code )
+        || 'unknown';
+}
 
 1;
 

@@ -6,6 +6,7 @@ requires 'Moose';
 requires 'Try::Tiny';
 requires 'URI';
 requires 'HTTP::Request';
+requires 'HTTP::Response';
 requires 'LWP::UserAgent';
 requires 'MooseX::Types::Moose';
 requires 'JSON::XS';
