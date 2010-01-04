@@ -44,7 +44,7 @@ sub net_api_declare {
 
     $class->add_attribute(
         'api_base_url',
-        is      => 'ro',
+        is      => 'rw',
         isa     => 'Str',
         lazy    => 1,
         default => delete $options{base_url} || ''
