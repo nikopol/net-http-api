@@ -25,6 +25,9 @@ is $users->{status}, 1, "... get users";
 ok my $user = $obj->get_user( id => 1 ), "... fetch user";
 is $user->{status}, 1, "... get bruce wayne";
 
+ok my ($user, $http_response) = $obj->get_user(id => 1), "... fetch user";
+isa_ok $http_response, "HTTP::Response", "... got the HTTP response object";
+
 #dies_ok { $obj->get_user( id => 12 ) } "... can't fetch unknown user";
 #my $err = $@;
 #is $err->http_code, 404, "... get 404";
