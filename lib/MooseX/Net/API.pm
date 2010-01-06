@@ -242,7 +242,14 @@ sub net_api_method {
                     @deserialize_order );
             }
 
-            return $content if ( $res->is_success );
+            if ( $res->is_success ) {
+                if (wantarray) {
+                    return ( $content, $res );
+                }
+                else {
+                    return $content;
+                }
+            }
 
             die MooseX::Net::API::Error->new(
                 http_error => $res,
