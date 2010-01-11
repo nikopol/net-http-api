@@ -12,7 +12,7 @@ use MooseX::Net::API::Meta::Method;
 use MooseX::Net::API::Role::Serialize;
 use MooseX::Net::API::Role::Deserialize;
 
-our $VERSION = '0.09';
+our $VERSION = '0.10';
 
 my $list_content_type = {
     'json' => 'application/json',
