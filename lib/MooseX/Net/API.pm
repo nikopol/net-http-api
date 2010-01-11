@@ -70,7 +70,8 @@ sub net_api_declare {
     }
 
     if ( !$options{format_mode} ) {
-        die MooseX::Net::API::Error->new( reason => "format_mode is not set" );
+        die MooseX::Net::API::Error->new(
+            reason => "format_mode is not set" );
     }
     elsif ( $options{format_mode} !~ /^(?:append|content\-type)$/ ) {
         die MooseX::Net::API::Error->new(
@@ -317,13 +318,14 @@ sub _request {
         $req->content($content);
     }
     else {
-        die MooseX::Net::API::Error->new( reason => "$method is not defined" );
+        die MooseX::Net::API::Error->new(
+            reason => "$method is not defined" );
     }
 
     $req->header( 'Content-Type' => $list_content_type->{$format} )
         if $self->api_format_mode eq 'content-type';
 
-    if ($do_auth || $options->{authentication}) {
+    if ( $do_auth || $options->{authentication} ) {
         if ($auth_method) {
             $req = $self->$auth_method($req);
         }
@@ -346,14 +348,24 @@ sub _do_authentication {
 package MooseX::Net::API::Error;
 
 use Moose;
+use JSON::XS;
+use Moose::Util::TypeConstraints;
 use overload '""' => \&error;
+
+subtype error => as 'Str';
+coerce error => from 'HashRef' => via { encode_json $_};
 
 has http_error => (
     is      => 'ro',
     isa     => 'HTTP::Response',
     handles => { http_message => 'message', http_code => 'code' }
 );
-has reason => ( is => 'ro', isa => 'Str|HashRef', predicate => 'has_reason' );
+has reason => (
+    is        => 'ro',
+    isa       => 'error',
+    predicate => 'has_reason',
+    coerce    => 1
+);
 
 sub error {
     my $self = shift;
