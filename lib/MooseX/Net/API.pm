@@ -7,8 +7,11 @@ use HTTP::Request;
 use Moose;
 use Moose::Exporter;
 
+use MooseX::Net::API::Meta::Error;
+
 use MooseX::Net::API::Meta::Class;
 use MooseX::Net::API::Meta::Method;
+
 use MooseX::Net::API::Role::Serialize;
 use MooseX::Net::API::Role::Deserialize;
 
@@ -29,7 +32,7 @@ sub init_meta {
     my ( $me, %options ) = @_;
 
     my $for = $options{for_class};
-    Moose::Util::MetaRole::apply_metaclass_roles(
+    Moose::Util::MetaRole::apply_metaroles(
         for_class       => $for,
         metaclass_roles => ['MooseX::Net::API::Meta::Class'],
     );
@@ -211,8 +214,9 @@ sub net_api_method {
                 }
             }
 
-            # XXX improve uri building
-            my $url    = $self->api_base_url . $path;
+            $path .= '/' if ( $self->api_base_url !~ m!/^! );
+            my $url = $self->api_base_url . $path;
+
             my $format = $self->api_format();
             $url .= "." . $format if ( $self->api_format_mode() eq 'append' );
             my $uri = URI->new($url);
@@ -345,38 +349,6 @@ sub _do_authentication {
     return $req;
 }
 
-package MooseX::Net::API::Error;
-
-use Moose;
-use JSON::XS;
-use Moose::Util::TypeConstraints;
-use overload '""' => \&error;
-
-subtype error => as 'Str';
-coerce error => from 'HashRef' => via { encode_json $_};
-
-has http_error => (
-    is      => 'ro',
-    isa     => 'HTTP::Response',
-    handles => { http_message => 'message', http_code => 'code' }
-);
-has reason => (
-    is        => 'ro',
-    isa       => 'error',
-    predicate => 'has_reason',
-    coerce    => 1
-);
-
-sub error {
-    my $self = shift;
-    return
-           ( $self->has_reason && $self->reason )
-        || ( $self->http_message . ": " . $self->http_code )
-        || 'unknown';
-}
-
-1;
-
 __END__
 
 =head1 NAME
@@ -412,7 +384,7 @@ MooseX::Net::API - Easily create client for net API
     ...
     useragent => sub {
       my $ua = LWP::UserAgent->new;
-      $ua->agent('MyUberAgent/0.23'); 
+      $ua->agent('MyUberAgent/0.23');
       return $ua
     },
     ...
