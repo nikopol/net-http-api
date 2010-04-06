@@ -7,7 +7,7 @@ use HTTP::Request;
 use Moose;
 use Moose::Exporter;
 
-use MooseX::Net::API::Meta::Error;
+use MooseX::Net::API::Error;
 
 use MooseX::Net::API::Meta::Class;
 use MooseX::Net::API::Meta::Method;
@@ -349,6 +349,7 @@ sub _do_authentication {
     return $req;
 }
 
+1;
 __END__
 
 =head1 NAME
@@ -544,3 +545,4 @@ This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
 
 =cut
+
