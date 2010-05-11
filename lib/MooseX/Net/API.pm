@@ -207,7 +207,7 @@ sub net_api_method {
             my $path = $options{path};
 
             # replace all args in the url
-            while ( $path =~ /\$(\w+)/ ) {
+            while ( $path =~ /\$(\w+)/g ) {
                 my $match = $1;
                 if ( my $value = delete $args{$match} ) {
                     $path =~ s/\$$match/$value/;
