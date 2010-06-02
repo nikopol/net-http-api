@@ -3,7 +3,7 @@ package MooseX::Net::API;
 use Moose;
 use Moose::Exporter;
 
-our $VERSION = '0.13';
+our $VERSION = '0.11';
 
 Moose::Exporter->setup_import_methods(
     with_meta => [qw/net_api_method net_api_declare/],
