@@ -2,11 +2,11 @@ package MooseX::Net::API::Meta::Method;
 
 use Moose;
 use MooseX::Net::API::Error;
+use Moose::Util::TypeConstraints;
+
 use MooseX::Types::Moose qw/Str Int ArrayRef/;
 
 extends 'Moose::Meta::Method';
-
-use Moose::Util::TypeConstraints;
 
 subtype UriPath => as 'Str' => where { $_ =~ m!^/! } =>
   message {"path must start with /"};
@@ -104,6 +104,7 @@ sub wrap {
         };
         $args{body} = $code;
     }
+
     $class->SUPER::wrap(%args);
 }
 
