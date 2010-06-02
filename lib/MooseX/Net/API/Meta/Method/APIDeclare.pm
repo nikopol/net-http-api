@@ -14,6 +14,22 @@ has options => (
         get_option => 'get',
     },
 );
+has accepted_options => (
+    is      => 'ro',
+    traits  => ['Array'],
+    isa     => 'ArrayRef[Str]',
+    default => sub {
+        [   qw/api_base_url
+              api_format
+              api_useranem
+              api_password
+              authentication
+              authentication_method/
+        ];
+    },
+    lazy       => 1,
+    auto_deref => 1,
+);
 
 sub add_net_api_declare {
     my ($meta, $name, %options) = @_;
@@ -25,8 +41,6 @@ sub add_net_api_declare {
         $meta->set_option(useragent => delete $options{useragent});
     }
 
-    # XXX custom authentication_method (replace with before request !)
-
     # XXX for backward compatibility
     for my $attr (qw/base_url format username password/) {
         my $attr_name = "api_" . $attr;
@@ -35,15 +49,11 @@ sub add_net_api_declare {
         }
     }
 
-    for my $attr (qw/api_base_url api_format api_username api_password authentication/) {
+    for my $attr ($meta->accepted_options) {
         $meta->set_option($attr => $options{$attr}) if defined $options{$attr};
     }
 
     # XXX before_request after_request
-
-    if (keys %options) {
-        # XXX croak
-    }
 }
 
 1;
