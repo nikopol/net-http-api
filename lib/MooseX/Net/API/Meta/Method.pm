@@ -67,8 +67,8 @@ sub wrap {
 
             $method->_validate_before_execute(\%method_args);
 
-            my $path = $method->build_path(\%method_args);
-            my $local_url = $method->build_uri($self, $path);
+            my $path = $method->_build_path(\%method_args);
+            my $local_url = $method->_build_uri($self, $path);
 
             my $result = $self->http_request(
                 $method->method => $local_url,
@@ -76,7 +76,7 @@ sub wrap {
             );
 
             my $code = $result->code;
-            
+
             if ($method->has_expected
                 && !$method->find_expected_code(sub {/$code/}))
             {
@@ -86,23 +86,7 @@ sub wrap {
                 );
             }
 
-            my $content_type = $self->api_format
-              // $result->header('Content-Type');
-            $content_type =~ s/(;.+)$//;
-
-            my $content;
-            if ($result->is_success && $code != 204) {
-                my @deserialize_order = ($content_type, $self->api_format);
-                $content =
-                  $self->deserialize($result->content, \@deserialize_order);
-
-                if (!$content) {
-                    die MooseX::Net::API::Error->new(
-                        reason     => "can't deserialize content",
-                        http_error => $result,
-                    );
-                }
-            }
+            my $content = $self->get_content($result);;
 
             if ($result->is_success) {
                 if (wantarray) {
@@ -144,12 +128,12 @@ sub _validate_required_before_install {
 
 sub _validate_before_execute {
     my ($self, $args) = @_;
-    for my $method (qw/check_params_before_run check_required_before_run/) {
+    for my $method (qw/_check_params_before_run _check_required_before_run/) {
         $self->$method($args);
     }
 }
 
-sub check_params_before_run {
+sub _check_params_before_run {
     my ($self, $args) = @_;
 
     # check if there is no undeclared param
@@ -161,7 +145,7 @@ sub check_params_before_run {
     }
 }
 
-sub check_required_before_run {
+sub _check_required_before_run {
     my ($self, $args) = @_;
 
     # check if all our params declared as required are present
@@ -173,7 +157,7 @@ sub check_required_before_run {
     }
 }
 
-sub build_path {
+sub _build_path {
     my ($self, $args) = @_;
     my $path = $self->path;
 
@@ -192,7 +176,7 @@ sub build_path {
     return $path;
 }
 
-sub build_uri {
+sub _build_uri {
     my ($method, $self, $path) = @_;
 
     my $local_url     = $self->api_base_url->clone;

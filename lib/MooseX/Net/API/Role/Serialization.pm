@@ -1,7 +1,10 @@
 package MooseX::Net::API::Role::Serialization;
 
+use 5.010;
+
 use Try::Tiny;
 use Moose::Role;
+use MooseX::Net::API::Error;
 
 has serializers => (
     traits     => ['Hash'],
@@ -14,6 +17,27 @@ has serializers => (
         _get_serializer => 'get',
     },
 );
+
+sub get_content {
+    my ($self, $result) = @_;
+
+    my $content_type = $self->api_format // $result->header('Content-Type');
+    $content_type =~ s/(;.+)$//;
+
+    my $content;
+    if ($result->is_success && $result->code != 204) {
+        my @deserialize_order = ($content_type, $self->api_format);
+        $content = $self->deserialize($result->content, \@deserialize_order);
+
+        if (!$content) {
+            die MooseX::Net::API::Error->new(
+                reason     => "can't deserialize content",
+                http_error => $result,
+            );
+        }
+    }
+    $content;
+}
 
 sub deserialize {
     my ($self, $content, $list_of_formats) = @_;
