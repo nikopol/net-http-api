@@ -12,6 +12,6 @@ package main;
 
 ok my $t = test::api::missing_api_base_url->new;
 dies_ok { $t->user } 'die with missing url';
-like $@, qr/api_base_url is missing/, 'missing api_base_url';
+like $@, qr/'api_base_url' have not been defined/, 'missing api_base_url';
 
 done_testing;
