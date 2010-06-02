@@ -1,38 +1,96 @@
 use strict;
 use warnings;
+
 use Test::More;
 use Test::Exception;
+
 use lib ('t/lib');
-use FakeAPI;
 
-my $obj = FakeAPI->new;
-ok $obj, "... object created";
-ok $obj->meta->has_attribute('api_useragent'),
-    "... useragent attribute have been added";
+use TestAPI;
 
-ok my $method = $obj->meta->find_method_by_name('get_user'),
-    '... method get_user have been created';
+ok my $api = TestAPI->new(), 'api object created';
 
-ok $method->meta->has_attribute('path'), '... method bar have attribute path';
-is $method->path, '/user/$id', '... get good path value';
+for my $role (qw/UserAgent Format Authentication Serialization Request/) {
+    ok $api->meta->does_role('MooseX::Net::API::Role::' . $role),
+      'does role ' . $role;
+}
 
-ok my @methods = $obj->meta->local_api_methods(), '... get api methods';
-is scalar @methods, 6, '... get 6 methods in our API';
+# test fetch list of users
+$api->api_useragent->add_handler(
+    'request_send' => sub {
+        my $request = shift;
+        is $request->method, 'GET', 'GET request';
+        my $res = HTTP::Response->new(200);
+        $res->content('[{"name":"eris"}]');
+        $res;
+    }
+);
 
-ok my $users = $obj->users(), "... get users list";
-is $users->{status}, 1, "... get users";
+ok my ($content, $res) = $api->users(), 'api call success';
+is $res->code, 200, 'http code as expected';
+is_deeply $content, [{name => 'eris'}], 'got a list of users';
 
-ok my $user = $obj->get_user( id => 1 ), "... fetch user";
-is $user->{status}, 1, "... get bruce wayne";
+# test fetch list of one user
+$api->api_useragent->remove_handler('request_send');
+$api->api_useragent->add_handler(
+    'request_send' => sub {
+        my $request = shift;
+        is $request->method, 'GET', 'GET request';
+        is $request->uri, 'http://exemple.com/user/eris.json',
+          'valid url generated';
+        my $res = HTTP::Response->new(200);
+        $res->content('{"name":"eris"}');
+        $res;
+    }
+);
 
-ok my ($user, $http_response) = $obj->get_user(id => 1), "... fetch user";
-isa_ok $http_response, "HTTP::Response", "... got the HTTP response object";
+ok $content = $api->user(user_name => 'eris'), 'api call success';
+is_deeply $content, {name => 'eris'}, 'valid user content';
 
-#dies_ok { $obj->get_user( id => 12 ) } "... can't fetch unknown user";
-#my $err = $@;
-#is $err->http_code, 404, "... get 404";
+# test to create a user
+$api->api_useragent->remove_handler('request_send');
+$api->api_useragent->add_handler(
+    'request_send' => sub {
+        my $request = shift;
+        is $request->method, 'POST', 'POST request';
+        is $request->content,
+          JSON::encode_json({name => 'eris', dob => '01/02/1900'}),
+          'got valid content in POST';
+        my $res = HTTP::Response->new(201);
+        $res->content('{"status":"ok"}');
+        $res;
+    }
+);
 
-#my $auth_obj = FakeAPI->new();
-#my $res = $auth_obj->auth_get_user(id => 1);
+($content, $res) = $api->add_user(name => 'eris', dob => '01/02/1900');
+ok $content, 'got content';
+is $res->code, 201, 'code as expected';
 
+# test to update a user
+$api->api_useragent->remove_handler('request_send');
+$api->api_useragent->add_handler(
+    'request_send' => sub {
+        my $request = shift;
+        my $res     = HTTP::Response->new(201);
+        $res->content('{"status":"ok"}');
+        $res;
+    }
+);
+
+($content, $res) = $api->update_user(name => 'eris', dob => '02/01/1900');
+ok $content, 'got content after update';
+is $res->code, 201, 'code as expected';
+
+# test to delete a user
+$api->api_useragent->remove_handler('request_send');
+$api->api_useragent->add_handler(
+    'request_send' => sub{
+        my $request = shift;
+        my $res = HTTP::Response->new(204);
+        $res;
+    }
+);
+
+($content, $res) = $api->delete_user(name => 'eris');
+is $res->code, 204, 'code as expected';
 done_testing;
