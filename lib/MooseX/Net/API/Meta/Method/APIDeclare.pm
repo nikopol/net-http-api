@@ -3,32 +3,25 @@ package MooseX::Net::API::Meta::Method::APIDeclare;
 use Moose::Role;
 use MooseX::Net::API::Error;
 
-has options => (
+my @accepted_options = qw/
+  api_base_url
+  api_format
+  api_username
+  api_password
+  authentication
+  authentication_method
+  /;
+
+has api_options => (
     is      => 'ro',
     traits  => ['Hash'],
     isa     => 'HashRef[Str|CodeRef]',
     default => sub { {} },
     lazy    => 1,
     handles => {
-        set_option => 'set',
-        get_option => 'get',
+        set_api_option => 'set',
+        get_api_option => 'get',
     },
-);
-has accepted_options => (
-    is      => 'ro',
-    traits  => ['Array'],
-    isa     => 'ArrayRef[Str]',
-    default => sub {
-        [   qw/api_base_url
-              api_format
-              api_username
-              api_password
-              authentication
-              authentication_method/
-        ];
-    },
-    lazy       => 1,
-    auto_deref => 1,
 );
 
 sub add_net_api_declare {
@@ -38,7 +31,7 @@ sub add_net_api_declare {
         die MooseX::Net::API::Error->new(
             reason => "'useragent' must be a CODE ref")
           unless ref $options{useragent} eq 'CODE';
-        $meta->set_option(useragent => delete $options{useragent});
+        $meta->set_api_option(useragent => delete $options{useragent});
     }
 
     # XXX for backward compatibility
@@ -49,11 +42,9 @@ sub add_net_api_declare {
         }
     }
 
-    for my $attr ($meta->accepted_options) {
-        $meta->set_option($attr => $options{$attr}) if defined $options{$attr};
+    for my $attr (@accepted_options) {
+        $meta->set_api_option($attr => $options{$attr}) if defined $options{$attr};
     }
-
-    # XXX before_request after_request
 }
 
 1;

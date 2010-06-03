@@ -12,7 +12,7 @@ has api_base_url => (
     lazy    => 1,
     default => sub {
         my $self         = shift;
-        my $api_base_url = $self->meta->get_option('api_base_url');
+        my $api_base_url = $self->meta->get_api_option('api_base_url');
         if (!$api_base_url) {
             die MooseX::Net::API::Error->new(
                 reason => "'api_base_url' have not been defined");

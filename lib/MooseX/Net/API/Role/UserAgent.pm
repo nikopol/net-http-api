@@ -9,7 +9,7 @@ has api_useragent => (
     lazy    => 1,
     default => sub {
         my $self = shift;
-        my $ua   = $self->meta->get_option('useragent');
+        my $ua   = $self->meta->get_api_option('useragent');
         return $ua->() if $ua;
         $ua = LWP::UserAgent->new();
         $ua->agent(

@@ -13,15 +13,15 @@ has local_api_methods => (
     default    => sub { [] },
     auto_deref => 1,
     handles    => {
-        _get_api_method  => 'grep',
-        _add_api_method  => 'push',
-        _all_api_methods => 'elements',
+        find_api_method_by_name => 'grep',
+        add_api_method          => 'push',
+        get_all_api_methods     => 'elements',
     },
 );
 
 before add_net_api_method => sub {
     my ($meta, $name) = @_;
-    if (my @method = $meta->_get_api_method(sub {/^$name$/})) {
+    if (my @method = $meta->find_api_method_by_name(sub {/^$name$/})) {
         die MooseX::Net::API::Error->new(
             reason => "method '$name' is already declared in " . $meta->name);
     }
@@ -30,7 +30,8 @@ before add_net_api_method => sub {
 sub add_net_api_method {
     my ($meta, $name, %options) = @_;
 
-    # accept blessed method
+    # XXX accept blessed method
+
     my $code = delete $options{code};
     $meta->add_method(
         $name,
@@ -41,7 +42,7 @@ sub add_net_api_method {
             %options
         ),
     );
-    $meta->_add_api_method($name);
+    $meta->add_api_method($name);
 }
 
 after add_net_api_method => sub {

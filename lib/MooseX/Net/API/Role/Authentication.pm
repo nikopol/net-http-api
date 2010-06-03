@@ -20,12 +20,12 @@ after BUILDALL => sub {
 
     for (qw/api_username api_password/) {
         my $predicate = 'has_' . $_;
-        my $value     = $self->meta->get_option($_);
+        my $value     = $self->meta->get_api_option($_);
         $self->$_($value) if $value && !$self->$predicate;
     }
 
-    if (my $has_auth = $self->meta->get_option('authentication')) {
-        my $auth_method = $self->meta->get_option('authentication_method');
+    if (my $has_auth = $self->meta->get_api_option('authentication')) {
+        my $auth_method = $self->meta->get_api_option('authentication_method');
         if ($auth_method) {
             $self->api_useragent->add_handler(
                 request_prepare => sub { $self->$auth_method(@_) });

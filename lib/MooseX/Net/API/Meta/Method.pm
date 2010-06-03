@@ -11,7 +11,7 @@ extends 'Moose::Meta::Method';
 subtype UriPath => as 'Str' => where { $_ =~ m!^/! } =>
   message {"path must start with /"};
 
-enum Method => qw(GET POST PUT DELETE);
+enum Method => qw(HEAD GET POST PUT DELETE);
 
 has description => (is => 'ro', isa => 'Str');
 has method      => (is => 'ro', isa => 'Method', required => 1);
@@ -46,16 +46,13 @@ has required => (
 );
 
 before wrap => sub {
-    my $class = shift;
-    my %args  = @_;
-
+    my ($class, %args) = @_;
     $class->_validate_params_before_install(\%args);
     $class->_validate_required_before_install(\%args);
 };
 
 sub wrap {
-    my $class = shift;
-    my %args  = @_;
+    my ($class, %args) = @_;
 
     if (!defined $args{body}) {
         my $code = sub {
