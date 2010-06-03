@@ -1,18 +1,17 @@
-package MooseX::Net::API::Meta::Class;
+package MooseX::Net::API::Parser;
 
-use Moose::Role;
+use Moose;
 
-with qw/
-    MooseX::Net::API::Meta::Method::APIMethod
-    MooseX::Net::API::Meta::Method::APIDeclare
-    /;
+sub encode {die "must be implemented"}
+sub decode {die "must be implemented"}
 
 1;
+
 __END__
 
 =head1 NAME
 
-MooseX::Net::API::Meta::Class
+MooseX::Net::API::Parser
 
 =head1 SYNOPSIS
 
@@ -26,7 +25,7 @@ franck cuny E<lt>franck@lumberjaph.netE<gt>
 
 =head1 LICENSE
 
-Copyright 2009, 2010 by Linkfluence
+Copyright 2010 by Linkfluence
 
 http://linkfluence.net
 
