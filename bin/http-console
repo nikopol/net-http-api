@@ -1,0 +1,46 @@
+use strict;
+use warnings;
+use 5.010;
+use Term::ReadLine;
+
+use Getopt::Long;
+use YAML::Syck;
+
+my $url = shift;
+my $format_mode = 'append';
+my $format = 'json';
+
+GetOptions(
+    'm=s' => \$format_mode,
+    'f=s'      => \$format,
+);
+
+package http::net::console;
+use MooseX::Net::API;
+
+package main;
+
+my ($content, $result);
+
+my $term   = Term::ReadLine->new("http::net::console");
+my $prompt = $url . '> ';
+while (defined(my $in = $term->readline($prompt))) {
+    if ($in =~ /^(GET|PUT|POST|DELETE)\s(.*)$/) {
+        my $http_console =
+          http::net::console->new(api_base_url => $url, api_format => $format, api_format_mode => $format_mode);
+        $http_console->meta->add_net_api_method(
+            'anonymous',
+            method => $1,
+            path   => $2
+        );
+        ($content, $result) = $http_console->anonymous;
+        say $result->content;
+    }
+    if ($in eq 'show headers') {
+        if (defined $result) {
+            say Dump $result->headers;
+        }else{
+            say "no headers to show";
+        }
+    }
+}

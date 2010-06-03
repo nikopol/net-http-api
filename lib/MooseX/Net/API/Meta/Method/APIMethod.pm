@@ -30,6 +30,7 @@ before add_net_api_method => sub {
 sub add_net_api_method {
     my ($meta, $name, %options) = @_;
 
+    # accept blessed method
     my $code = delete $options{code};
     $meta->add_method(
         $name,

@@ -99,7 +99,7 @@ sub wrap {
 
             die MooseX::Net::API::Error->new(
                 http_error => $result,
-                reason     => $result->reason,
+                reason     => $result->message,
             );
         };
         $args{body} = $code;
