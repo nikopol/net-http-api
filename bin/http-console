@@ -39,7 +39,7 @@ while (defined(my $in = $term->readline($prompt))) {
         ($content, $result) = $http_console->anonymous;
         say $result->content;
     }
-    elsif ($in =~ /^(POST|PUT)\s(.*)(?:\s\-d\s(.*))$/) {
+    elsif ($in =~ /^(POST|PUT)\s(.*)(?:\s(.*))$/) {
         my $method       = $1;
         my $path         = $2;
         my $data         = $3;
