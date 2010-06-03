@@ -110,9 +110,52 @@ MooseX::Net::API - Easily create client for net API
 =head1 DESCRIPTION
 
 MooseX::Net::API is a module to help to easily create a client for a web API.
+
 This module is heavily inspired by what L<Net::Twitter> does.
 
 B<THIS MODULE IS IN ITS BETA QUALITY. THE API MAY CHANGE IN THE FUTURE>
+
+The following roles are added to your class:
+
+=over 4
+
+=item B<MooseX::Net::API::Role::UserAgent>
+
+=item B<MooseX::Net::API::Role::Format>
+
+=item B<MooseX::Net::API::Role::Authentication>
+
+=item B<MooseX::Net::API::Role::Serialization>
+
+=item B<MooseX::Net::API::Role::Request>
+
+=back
+
+The following attributes are added to your class:
+
+=over 4
+
+=item B<api_base_url>
+
+=item B<api_format>
+
+=item B<api_username>
+
+=item B<api_passord>
+
+=item B<authentication>
+
+=item B<authentication_method>
+
+=back
+
+The following methods are added to your class:
+
+=over 4
+
+=item B<http_request>
+
+=back
 
 =head2 METHODS
 
@@ -130,17 +173,37 @@ B<THIS MODULE IS IN ITS BETA QUALITY. THE API MAY CHANGE IN THE FUTURE>
 
 =item B<api_base_url>
 
-The base url for all the API's calls. This will add an B<api_base_url> attribut to your class. Can be set at the object creation or before calling an API method. If no api_base_url is defined, the method will die.
+The base url for all the API's calls. This will set the B<api_base_url> attribut in your class. Can be set at the object creation or before calling an API method.
 
-=item B<api_format> (required, must be either xml, json or yaml)
+=item B<api_format>
 
-The format for the API's calls. This will add an B<api_format> attribut to your class.
+The format for the API's calls. This will set the B<api_format> attribut to your class. Value can be:
 
-=item B<api_format_mode> (required, must be 'append' or 'content-type')
+=over 2
 
-How the format is handled. B<append> will add B<.json> to the query, B<content-type> will add the content-type information to the header of the request.
+=item B<json>
 
-=item B<useragent> (optional, by default it's a LWP::UserAgent object)
+=item B<yaml>
+
+=item B<xml>
+
+=back
+
+=item B<api_format_mode>
+
+How the format is handled. B<append> will add B<.$format> to the query, B<content-type> will set the content-type information to the header of the request. Should be one the following value:
+
+=over 2
+
+=item B<content-type>
+
+=item B<append>
+
+=back
+
+=item B<api_useragent>
+
+A L<LWP::UserAgent> object.
 
     useragent => sub {
         my $ua = LWP::UserAgent->new;
@@ -148,11 +211,11 @@ How the format is handled. B<append> will add B<.json> to the query, B<content-t
         return $ua;
     }
 
-=item B<authentication> (optional)
+=item B<authentication>
 
 This is a boolean to tell if we must authenticate to use this API.
 
-=item B<authentication_method> (optional)
+=item B<authentication_method>
 
 The default authentication method only set an authorization header using the Basic Authentication Scheme. You can write your own authentication method:
 
@@ -165,7 +228,6 @@ The default authentication method only set an authorization header using the Bas
   sub my_auth_method {
     my ($self, $req) = @_; #$req is an HTTP::Request object
     ...
-    return $req;
   }
 
 =back
@@ -174,15 +236,15 @@ The default authentication method only set an authorization header using the Bas
 
 =over 2
 
-=item B<description> [string]
+=item B<description>
 
-description of the method (this is a documentation)
+A string to describe the method (this is a documentation)
 
-=item B<method> [string]
+=item B<method>
 
 HTTP method (GET, POST, PUT, DELETE)
 
-=item B<path> [string]
+=item B<path>
 
 path of the query.
 
@@ -190,7 +252,7 @@ If you defined your path and params like this
 
     net_api_method user_comments => (
       ...
-      path => '/user/$user/list/$date/',
+      path => '/user/:user/list/:date',
       params => [qw/user date foo bar/],
       ...
     );
@@ -199,23 +261,19 @@ and you call
 
     $obj->user_comments(user => 'franck', date => 'today', foo => 1, bar => 2);
 
-the url generetad will look like
+the url generated will look like
 
     /user/franck/list/today/?foo=1&bar=2
 
-=item B<params> [arrayref]
+=item B<params>
 
-list of params.
+Arrayref of params.
 
-=item B<required> [arrayref]
+=item B<required>
 
-list of required params.
+Arrayref of required params.
 
-=item B<authentication> (optional)
-
-should we do an authenticated call
-
-=item B<params_in_url> (optional)
+=item B<params_in_url>
 
 When you do a post, the content may have to be sent as arguments in the url, and not as content in the header.
 
