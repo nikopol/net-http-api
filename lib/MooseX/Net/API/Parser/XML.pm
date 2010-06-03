@@ -4,7 +4,7 @@ use XML::Simple;
 use Moose;
 extends 'MooseX::Net::API::Parser';
 
-has _xml_parser(
+has _xml_parser => (
     is      => 'rw',
     isa     => 'XML::Simple',
     lazy    => 1,
