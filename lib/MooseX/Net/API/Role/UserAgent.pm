@@ -1,5 +1,7 @@
 package MooseX::Net::API::Role::UserAgent;
 
+# ABSTRACT: create UserAgent
+
 use Moose::Role;
 use LWP::UserAgent;
 
@@ -20,11 +22,6 @@ has api_useragent => (
 );
 
 1;
-__END__
-
-=head1 NAME
-
-MooseX::Net::API::Role::UseAgent
 
 =head1 SYNOPSIS
 
@@ -37,20 +34,3 @@ MooseX::Net::API::Role::UseAgent
 =item B<api_useragent>
 
 =back
-
-=head1 AUTHOR
-
-franck cuny E<lt>franck@lumberjaph.netE<gt>
-
-=head1 SEE ALSO
-
-=head1 LICENSE
-
-Copyright 2009, 2010 by Linkfluence
-
-http://linkfluence.net
-
-This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself.
-
-=cut
