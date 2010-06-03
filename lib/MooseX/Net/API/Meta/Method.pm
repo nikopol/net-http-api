@@ -11,13 +11,13 @@ extends 'Moose::Meta::Method';
 subtype UriPath => as 'Str' => where { $_ =~ m!^/! } =>
   message {"path must start with /"};
 
-enum 'Method' => qw(GET POST PUT DELETE);
+enum Method => qw(GET POST PUT DELETE);
 
 has description => (is => 'ro', isa => 'Str');
 has method      => (is => 'ro', isa => 'Method', required => 1);
 has path        => (is => 'ro', isa => 'UriPath', required => 1, coerce => 1);
-has params_in_url => (is => 'ro', isa => 'Bool', default => 0);
-has authentication => (is => 'ro', isa => 'Bool', required => 0, default => 0);
+has params_in_url  => (is => 'ro', isa => 'Bool', default => 0);
+has authentication => (is => 'ro', isa => 'Bool', default => 0);
 has expected => (
     traits     => ['Array'],
     is         => 'ro',
@@ -195,3 +195,29 @@ sub _build_uri {
 }
 
 1;
+__END__
+
+=head1 NAME
+
+MooseX::Net::API::Meta::Class::Method
+
+=head1 SYNOPSIS
+
+=head1 DESCRIPTION
+
+=head1 AUTHOR
+
+franck cuny E<lt>franck@lumberjaph.netE<gt>
+
+=head1 SEE ALSO
+
+=head1 LICENSE
+
+Copyright 2009, 2010 by Linkfluence
+
+http://linkfluence.net
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+=cut

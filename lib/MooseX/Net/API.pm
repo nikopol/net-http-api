@@ -72,11 +72,11 @@ MooseX::Net::API - Easily create client for net API
     );
 
     # declaring a users method
-    # calling $obj->users will call http://exemple.com/api/users?country=france
+    # calling $obj->users will call http://exemple.com/api/users/france
     net_api_method users => (
         description => 'this get a list of users',
         method      => 'GET',
-        path        => '/users/',
+        path        => '/users/:country',
         params      => [qw/country/],
     );
 
@@ -154,6 +154,14 @@ The following methods are added to your class:
 =over 4
 
 =item B<http_request>
+
+=item B<get_content>
+
+=item B<serialize>
+
+=item B<deserialize>
+
+=item B<content_type>
 
 =back
 
