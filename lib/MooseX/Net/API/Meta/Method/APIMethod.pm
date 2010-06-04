@@ -9,7 +9,7 @@ use MooseX::Types::Moose qw/Str ArrayRef/;
 
 has local_api_methods => (
     traits     => ['Array'],
-    is         => 'ro',
+    is         => 'rw',
     isa        => ArrayRef [Str],
     required   => 1,
     default    => sub { [] },
@@ -59,6 +59,13 @@ after add_net_api_method => sub {
         }
     );
 };
+
+sub remove_net_api_method {
+    my ($meta, $name) = @_;
+    my @methods = grep { !/$name/ } $meta->get_all_api_methods;
+    $meta->local_api_methods(\@methods);
+    $meta->remove_method($name);
+}
 
 1;
 
