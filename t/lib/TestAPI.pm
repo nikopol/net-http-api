@@ -16,8 +16,8 @@ net_api_method users => (
 
 net_api_method user => (
     method   => 'GET',
-    path     => '/user/:user_name',
-    params   => [qw/user_name/],
+    path     => '/user/:user_name/:last_name',
+    params   => [qw/user_name last_name/],
     required => [qw/user_name/],
     expected => [qw/200/],
 );

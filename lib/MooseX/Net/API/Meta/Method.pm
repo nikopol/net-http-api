@@ -170,9 +170,10 @@ sub _build_path {
             $path =~ s/(?:\$|:)$match/$value/;
         }
         if ($max_iter > $i) {
-            $path =~ s/(?:\$|:)(\w+)//;
+            $path =~ s/(?:\/)?(?:\$|:)(\w+)$//;
         }
     }
+    $path =~ s/(?:\/)?(?:\$|:)(\w+)$//;
     return $path;
 }
 
