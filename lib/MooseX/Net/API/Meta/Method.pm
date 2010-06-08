@@ -15,11 +15,34 @@ subtype UriPath => as 'Str' => where { $_ =~ m!^/! } =>
 
 enum Method => qw(HEAD GET POST PUT DELETE);
 
-has description => (is => 'ro', isa => 'Str');
-has method      => (is => 'ro', isa => 'Method', required => 1);
-has path        => (is => 'ro', isa => 'UriPath', required => 1, coerce => 1);
-has params_in_url  => (is => 'ro', isa => 'Bool', default => 0);
-has authentication => (is => 'ro', isa => 'Bool', default => 0);
+has method => (
+    is       => 'ro',
+    isa      => 'Method',
+    required => 1
+);
+has path => (
+    is       => 'ro',
+    isa      => 'UriPath',
+    required => 1,
+    coerce   => 1
+);
+has description => (
+    is        => 'ro',
+    isa       => 'Str',
+    predicate => 'has_description'
+);
+has params_in_url => (
+    is        => 'ro',
+    isa       => 'Bool',
+    predicate => 'has_params_in_url',
+    default   => 0
+);
+has authentication => (
+    is        => 'ro',
+    isa       => 'Bool',
+    predicate => 'has_authentication',
+    default   => 0
+);
 has expected => (
     traits     => ['Array'],
     is         => 'ro',
@@ -36,7 +59,7 @@ has params => (
     required   => 0,
     default    => sub { [] },
     auto_deref => 1,
-    handles    => {find_param => 'first',}
+    handles    => {find_request_parameter => 'first',}
 );
 has required => (
     traits     => ['Array'],
@@ -49,8 +72,19 @@ has required => (
 
 before wrap => sub {
     my ($class, %args) = @_;
-    $class->_validate_params_before_install(\%args);
-    $class->_validate_required_before_install(\%args);
+
+    if (!$args{params} && $args{required}) {
+        die MooseX::Net::API::Error->new(
+            reason => "You can't require a param that have not been declared");
+    }
+
+    if ( $args{required} ) {
+        foreach my $required ( @{ $args{required} } ) {
+            die MooseX::Net::API::Error->new( reason =>
+                    "$required is required but is not declared in params" )
+                if ( !grep { $_ eq $required } @{ $args{params} } );
+        }
+    }
 };
 
 sub wrap {
@@ -60,12 +94,9 @@ sub wrap {
         my $code = sub {
             my ($self, %method_args) = @_;
 
-            my $method =
-              $self->meta->find_method_by_name($args{name})
-              ->get_original_method;
+            my $method = $self->meta->find_net_api_method_by_name($args{name});
 
             $method->_validate_before_execute(\%method_args);
-
             my $path = $method->_build_path(\%method_args);
             my $local_url = $method->_build_uri($self, $path);
 
@@ -107,25 +138,6 @@ sub wrap {
     $class->SUPER::wrap(%args);
 }
 
-sub _validate_params_before_install {
-    my ( $class, $args ) = @_;
-    if ( !$args->{params} && $args->{required} ) {
-        die MooseX::Net::API::Error->new( reason =>
-                "You can't require a param that have not been declared" );
-    }
-}
-
-sub _validate_required_before_install {
-    my ( $class, $args ) = @_;
-    if ( $args->{required} ) {
-        foreach my $required ( @{ $args->{required} } ) {
-            die MooseX::Net::API::Error->new( reason =>
-                    "$required is required but is not declared in params" )
-                if ( !grep { $_ eq $required } @{ $args->{params} } );
-        }
-    }
-}
-
 sub _validate_before_execute {
     my ($self, $args) = @_;
     for my $method (qw/_check_params_before_run _check_required_before_run/) {
@@ -138,7 +150,7 @@ sub _check_params_before_run {
 
     # check if there is no undeclared param
     foreach my $arg (keys %$args) {
-        if (!$self->find_param(sub {/$arg/})) {
+        if (!$self->find_request_parameter(sub {/$arg/})) {
             die MooseX::Net::API::Error->new(
                 reason => "'$arg' is not declared as a param");
         }
