@@ -69,6 +69,25 @@ has required => (
     auto_deref => 1,
     required   => 0,
 );
+has documentation => (
+    is      => 'ro',
+    isa     => 'Str',
+    lazy    => 1,
+    default => sub {
+        my $self = shift;
+        my $doc;
+        $doc .= "name:        " . $self->name . "\n";
+        $doc .= "description: " . $self->description . "\n"
+          if $self->has_description;
+        $doc .= "method:      " . $self->method . "\n";
+        $doc .= "path:        " . $self->path . "\n";
+        $doc .= "arguments:   " . join(', ', $self->params) . "\n"
+          if $self->params;
+        $doc .= "required:    " . join(', ', $self->required) . "\n"
+          if $self->required;
+        $doc;
+    }
+);
 
 before wrap => sub {
     my ($class, %args) = @_;
