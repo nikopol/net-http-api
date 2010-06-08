@@ -23,26 +23,27 @@ has local_net_api_methods => (
 
 sub find_net_api_method_by_name {
     my ($meta, $name) = @_;
-    my $method_name = $meta->_find_net_api_method_by_name(sub{/^$name$/});
+    my $method_name = $meta->_find_net_api_method_by_name(sub {/^$name$/});
     return unless $method_name;
     my $method = $meta->find_method_by_name($method_name);
     if ($method->isa('Class::MOP::Method::Wrapped')) {
         return $method->get_original_method;
-    }else{
+    }
+    else {
         return $method;
     }
 }
 
 sub remove_net_api_method {
     my ($meta, $name) = @_;
-    my @methods = grep { !/$name/ } $meta->get_all_api_methods;
-    $meta->local_api_methods(\@methods);
+    my @methods = grep { !/$name/ } $meta->get_all_net_api_methods;
+    $meta->local_net_api_methods(\@methods);
     $meta->remove_method($name);
 }
 
 before add_net_api_method => sub {
     my ($meta, $name) = @_;
-    if ($meta->find_net_api_method_by_name(sub {/^$name$/})) {
+    if ($meta->_find_net_api_method_by_name(sub {/^$name$/})) {
         die MooseX::Net::API::Error->new(
             reason => "method '$name' is already declared in " . $meta->name);
     }
