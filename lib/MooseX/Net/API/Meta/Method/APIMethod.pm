@@ -23,7 +23,7 @@ has local_net_api_methods => (
 
 sub find_net_api_method_by_name {
     my ($meta, $name) = @_;
-    my $method_name = $meta->_find_net_api_method_by_name(sub{/$name/});
+    my $method_name = $meta->_find_net_api_method_by_name(sub{/^$name$/});
     return unless $method_name;
     my $method = $meta->find_method_by_name($method_name);
     if ($method->isa('Class::MOP::Method::Wrapped')) {
