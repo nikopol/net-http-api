@@ -35,8 +35,8 @@ has api_format_mode => (
     lazy    => 1,
     default => sub {
         my $self = shift;
-        my $mode = $self->meta->get_api_option('api_format_mode');
-        $mode || 'append';
+        my $mode = $self->meta->get_api_option('api_format_mode') || 'append';
+        $mode;
     }
 );
 

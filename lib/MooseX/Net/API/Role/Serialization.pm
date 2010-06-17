@@ -55,7 +55,8 @@ sub deserialize {
 
 sub serialize {
     my ($self, $content) = @_;
-    my $s = $self->_get_serializer($self->api_format);
+    my $s = $self->_get_serializer($self->api_format)
+      || $self->_load_serializer();
     my $result = try { $s->encode($content) };
     return $result if $result;
 }
@@ -96,3 +97,5 @@ sub _load_serializer {
 =item B<deserialize>
 
 =back
+99:	hit eof while in pod documentation (no =cut seen)
+	this can cause trouble with some pod utilities

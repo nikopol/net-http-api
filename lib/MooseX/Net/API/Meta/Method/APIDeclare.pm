@@ -8,6 +8,7 @@ use MooseX::Net::API::Error;
 my @accepted_options = qw/
   api_base_url
   api_format
+  api_format_mode
   api_username
   api_password
   authentication
@@ -37,7 +38,7 @@ sub add_net_api_declare {
     }
 
     # XXX for backward compatibility
-    for my $attr (qw/base_url format username password/) {
+    for my $attr (qw/base_url format format_mode username password/) {
         my $attr_name = "api_" . $attr;
         if (exists $options{$attr} && !exists $options{$attr_name}) {
             $options{$attr_name} = delete $options{$attr};
