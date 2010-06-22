@@ -37,6 +37,11 @@ has params_in_url => (
     predicate => 'has_params_in_url',
     default   => 0
 );
+has strict => (
+    is => 'ro',
+    isa => 'Bool',
+    default => 1,
+);
 has authentication => (
     is        => 'ro',
     isa       => 'Bool',
@@ -167,6 +172,8 @@ sub _validate_before_execute {
 sub _check_params_before_run {
     my ($self, $args) = @_;
 
+    return if !$self->strict;
+
     # check if there is no undeclared param
     foreach my $arg (keys %$args) {
         if (!$self->find_request_parameter(sub {/$arg/})) {
@@ -204,7 +211,7 @@ sub _build_path {
             $path =~ s/(?:\/)?(?:\$|:)(\w+)$//;
         }
     }
-    $path =~ s/(?:\/)?(?:\$|:)(\w+)$//;
+    $path =~ s/(?:\/)?(?:\$|\\:)(\w+)$//;
     return $path;
 }
 

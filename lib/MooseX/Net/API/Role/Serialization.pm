@@ -23,6 +23,8 @@ has serializers => (
 sub get_content {
     my ($self, $result) = @_;
 
+    return undef unless $result->content;
+
     my $content_type = $self->api_format // $result->header('Content-Type');
     $content_type =~ s/(;.+)$//;
 
