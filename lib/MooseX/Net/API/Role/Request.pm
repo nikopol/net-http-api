@@ -28,18 +28,23 @@ sub http_request {
 
     my $request;
 
-    if ( $method =~ /^(?:GET|DELETE)$/ || $params_in_url ) {
+    if ($method =~ /^(?:GET|DELETE)$/) {
         $uri->query_form(%$args);
-        $request = HTTP::Request->new( $method => $uri );
+        $request = HTTP::Request->new($method => $uri);
     }
-    elsif ( $method =~ /^(?:POST|PUT)$/ ) {
-        $request = HTTP::Request->new( $method => $uri );
+    elsif ($method =~ /^(?:POST|PUT)$/) {
+        my $params = {};
+        foreach my $key (@$params_in_url) {
+            $params->{$key} = $args->{$key} if exists $args->{$key};
+        }
+        $uri->query_form(%$params) if $params;
+
+        $request = HTTP::Request->new($method => $uri);
         my $content = $self->serialize($args);
         $request->content($content);
     }
     else {
-        die MooseX::Net::API::Error->new(
-            reason => "$method is not defined" );
+        die MooseX::Net::API::Error->new(reason => "$method is not defined");
     }
 
     $request->header(

@@ -46,4 +46,20 @@ net_api_method delete_user => (
     expected => [qw/204/],
 );
 
+net_api_method unstrict_users => (
+    method   => 'GET',
+    path     => '/users/unstrict',
+    strict   => 0,
+    params   => [qw/name/],
+    required => [qw/name/],
+);
+
+net_api_method params_users => (
+    method        => 'POST',
+    path          => '/users/',
+    params        => [qw/name/],
+    params_in_url => [qw/bod/],
+    required      => [qw/bod name/],
+);
+
 1;

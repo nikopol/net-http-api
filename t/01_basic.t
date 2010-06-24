@@ -93,4 +93,39 @@ $api->api_useragent->add_handler(
 
 ($content, $res) = $api->delete_user(name => 'eris');
 is $res->code, 204, 'code as expected';
+
+# unstrict parameters
+$api->api_useragent->remove_handler('request_send');
+$api->api_useragent->add_handler(
+    'request_send' => sub {
+        my $request = shift;
+        my $res = HTTP::Response->new(200);
+        $res;
+    }
+);
+
+($content, $res) = $api->unstrict_users(
+    name         => 'eris',
+    last_name    => 'foo',
+    random_stuff => 'bar'
+);
+is $res->code, 200, 'code as expected';
+is $res->request->uri,
+  'http://exemple.com/users/unstrict.json?random_stuff=bar&name=eris&last_name=foo',
+  'url is ok with no declared parameters';
+
+# params in url and body
+$api->api_useragent->remove_handler('request_send');
+$api->api_useragent->add_handler(
+    'request_send' => sub {
+        my $request = shift;
+        my $res = HTTP::Response->new(200);
+        $res;
+    }
+);
+
+($content, $res) = $api->params_users(name => 'eris', bod => '01/01/1970');
+is $res->code, 200, 'code as expected';
+is $res->request->uri, 'http://exemple.com/users.json?bod=01%2F01%2F1970', 'url is ok';
+
 done_testing;

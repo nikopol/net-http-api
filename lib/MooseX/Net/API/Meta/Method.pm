@@ -10,43 +10,22 @@ use MooseX::Types::Moose qw/Str Int ArrayRef/;
 
 extends 'Moose::Meta::Method';
 
-subtype UriPath => as 'Str' => where { $_ =~ m!^/! } =>
-  message {"path must start with /"};
+subtype UriPath
+    => as 'Str'
+    => where { $_ =~ m!^/! }
+    => message {"path must start with /"};
 
 enum Method => qw(HEAD GET POST PUT DELETE);
 
-has method => (
-    is       => 'ro',
-    isa      => 'Method',
-    required => 1
-);
-has path => (
-    is       => 'ro',
-    isa      => 'UriPath',
-    required => 1,
-    coerce   => 1
-);
-has description => (
-    is        => 'ro',
-    isa       => 'Str',
-    predicate => 'has_description'
-);
-has params_in_url => (
-    is        => 'ro',
-    isa       => 'Bool',
-    predicate => 'has_params_in_url',
-    default   => 0
-);
-has strict => (
+has path   => (is => 'ro', isa => 'UriPath', required => 1, coerce => 1);
+has method => (is => 'ro', isa => 'Method', required => 1);
+has description => (is => 'ro', isa => 'Str',  predicate => 'has_description');
+has strict      => (is => 'ro', isa => 'Bool', default   => 1,);
+has authentication => (
     is => 'ro',
     isa => 'Bool',
-    default => 1,
-);
-has authentication => (
-    is        => 'ro',
-    isa       => 'Bool',
     predicate => 'has_authentication',
-    default   => 0
+    default => 0
 );
 has expected => (
     traits     => ['Array'],
@@ -65,6 +44,15 @@ has params => (
     default    => sub { [] },
     auto_deref => 1,
     handles    => {find_request_parameter => 'first',}
+);
+has params_in_url => (
+    traits     => ['Array'],
+    is         => 'ro',
+    isa        => ArrayRef [Str],
+    required   => 0,
+    default    => sub { [] },
+    auto_deref => 0,
+    handles => {find_request_url_parameters => 'first'}
 );
 has required => (
     traits     => ['Array'],
@@ -106,7 +94,7 @@ before wrap => sub {
         foreach my $required ( @{ $args{required} } ) {
             die MooseX::Net::API::Error->new( reason =>
                     "$required is required but is not declared in params" )
-                if ( !grep { $_ eq $required } @{ $args{params} } );
+                if ( !grep { $_ eq $required } @{ $args{params} }, @{$args{params_in_url}} );
         }
     }
 };
@@ -176,7 +164,9 @@ sub _check_params_before_run {
 
     # check if there is no undeclared param
     foreach my $arg (keys %$args) {
-        if (!$self->find_request_parameter(sub {/$arg/})) {
+        if (   !$self->find_request_parameter(sub {/$arg/})
+            && !$self->find_request_url_parameters(sub {/$arg/}))
+        {
             die MooseX::Net::API::Error->new(
                 reason => "'$arg' is not declared as a param");
         }
@@ -208,10 +198,10 @@ sub _build_path {
             $path =~ s/(?:\$|:)$match/$value/;
         }
         if ($max_iter > $i) {
-            $path =~ s/(?:\/)?(?:\$|:)(\w+)$//;
+            $path =~ s/(?:\/)?(?:$|:)(?:.*)$//;
         }
     }
-    $path =~ s/(?:\/)?(?:\$|\\:)(\w+)$//;
+    $path =~ s/(?:\/)?(?:$|:)(?:.*)$//;
     return $path;
 }
 
