@@ -50,7 +50,8 @@ sub deserialize {
         my $s = $self->_get_serializer($format)
           || $self->_load_serializer($format);
         next unless $s;
-        my $result = try { $s->decode($content) };
+        my $result;
+        try { $result = $s->decode($content) };
         return $result if $result;
     }
 }

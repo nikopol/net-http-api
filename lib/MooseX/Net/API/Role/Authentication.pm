@@ -5,14 +5,14 @@ package MooseX::Net::API::Role::Authentication;
 use Moose::Role;
 
 has api_username => (
-    is      => 'rw',
-    isa     => 'Str',
+    is        => 'rw',
+    isa       => 'Str',
     predicate => 'has_api_username',
 );
 
 has api_password => (
-    is      => 'rw',
-    isa     => 'Str',
+    is        => 'rw',
+    isa       => 'Str',
     predicate => 'has_api_password',
 );
 
@@ -26,7 +26,9 @@ after BUILDALL => sub {
         $self->$_($value) if $value && !$self->$predicate;
     }
 
-    if (my $has_auth = $self->meta->get_api_option('authentication')) {
+    if (   $self->meta->get_api_option('authentication')
+        || $self->meta->get_api_option('authentication_method'))
+    {
         my $auth_method = $self->meta->get_api_option('authentication_method');
         if ($auth_method) {
             $self->api_useragent->add_handler(
@@ -61,3 +63,5 @@ after BUILDALL => sub {
 =item B<api_username>
 
 =back
+64:	hit eof while in pod documentation (no =cut seen)
+	this can cause trouble with some pod utilities
