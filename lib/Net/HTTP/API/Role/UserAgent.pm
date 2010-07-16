@@ -1,4 +1,4 @@
-package MooseX::Net::API::Role::UserAgent;
+package Net::HTTP::API::Role::UserAgent;
 
 # ABSTRACT: create UserAgent
 
@@ -15,7 +15,7 @@ has api_useragent => (
         return $ua->() if $ua;
         $ua = LWP::UserAgent->new();
         $ua->agent(
-            "MooseX::Net::API " . $MooseX::Net::API::VERSION . " (Perl)");
+            "Net::HTTP::API " . $Net::HTTP::API::VERSION . " (Perl)");
         $ua->env_proxy;
         return $ua;
     }

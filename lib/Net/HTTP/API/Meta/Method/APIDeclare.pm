@@ -1,9 +1,9 @@
-package MooseX::Net::API::Meta::Method::APIDeclare;
+package Net::HTTP::API::Meta::Method::APIDeclare;
 
 # ABSTRACT: declare API
 
 use Moose::Role;
-use MooseX::Net::API::Error;
+use Net::HTTP::API::Error;
 
 my @accepted_options = qw/
   api_base_url
@@ -31,7 +31,7 @@ sub add_net_api_declare {
     my ($meta, $name, %options) = @_;
 
     if ($options{useragent}) {
-        die MooseX::Net::API::Error->new(
+        die Net::HTTP::API::Error->new(
             reason => "'useragent' must be a CODE ref")
           unless ref $options{useragent} eq 'CODE';
         $meta->set_api_option(useragent => delete $options{useragent});

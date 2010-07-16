@@ -1,9 +1,9 @@
-package MooseX::Net::API::Meta::Method;
+package Net::HTTP::API::Meta::Method;
 
 # ABSTRACT: create api method
 
 use Moose;
-use MooseX::Net::API::Error;
+use Net::HTTP::API::Error;
 use Moose::Util::TypeConstraints;
 
 use MooseX::Types::Moose qw/Str Int ArrayRef/;
@@ -86,13 +86,13 @@ before wrap => sub {
     my ($class, %args) = @_;
 
     if (!$args{params} && $args{required}) {
-        die MooseX::Net::API::Error->new(
+        die Net::HTTP::API::Error->new(
             reason => "You can't require a param that have not been declared");
     }
 
     if ( $args{required} ) {
         foreach my $required ( @{ $args{required} } ) {
-            die MooseX::Net::API::Error->new( reason =>
+            die Net::HTTP::API::Error->new( reason =>
                     "$required is required but is not declared in params" )
                 if ( !grep { $_ eq $required } @{ $args{params} }, @{$args{params_in_url}} );
         }
@@ -122,7 +122,7 @@ sub wrap {
             if ($method->has_expected
                 && !$method->find_expected_code(sub {/$code/}))
             {
-                die MooseX::Net::API::Error->new(
+                die Net::HTTP::API::Error->new(
                     reason     => "unexpected code",
                     http_error => $result
                 );
@@ -139,7 +139,7 @@ sub wrap {
                 }
             }
 
-            die MooseX::Net::API::Error->new(
+            die Net::HTTP::API::Error->new(
                 http_error => $result,
                 reason     => $result->message,
             );
@@ -167,7 +167,7 @@ sub _check_params_before_run {
         if (   !$self->find_request_parameter(sub {/$arg/})
             && !$self->find_request_url_parameters(sub {/$arg/}))
         {
-            die MooseX::Net::API::Error->new(
+            die Net::HTTP::API::Error->new(
                 reason => "'$arg' is not declared as a param");
         }
     }
@@ -179,7 +179,7 @@ sub _check_required_before_run {
     # check if all our params declared as required are present
     foreach my $required ($self->required) {
         if (!grep { $required eq $_ } keys %$args) {
-            die MooseX::Net::API::Error->new(reason =>
+            die Net::HTTP::API::Error->new(reason =>
                   "'$required' is declared as required, but is not present");
         }
     }
@@ -198,10 +198,10 @@ sub _build_path {
             $path =~ s/(?:\$|:)$match/$value/;
         }
         if ($max_iter > $i) {
-            $path =~ s/(?:\/((?:\$|\:).*))?$//;
+            $path =~ s/\/(?:(\$|\:).*)?$//;
         }
     }
-    $path =~ s/(?:\/((?:\$|\:).*))?$//;
+    $path =~ s/\/(?:(\$|\:).*)?$//;
     return $path;
 }
 
@@ -227,3 +227,4 @@ sub _build_uri {
 =head1 SYNOPSIS
 
 =head1 DESCRIPTION
+

@@ -1,10 +1,10 @@
-package MooseX::Net::API::Parser::JSON;
+package Net::HTTP::API::Parser::JSON;
 
 # ABSTRACT: Parse JSON
 
 use JSON;
 use Moose;
-extends 'MooseX::Net::API::Parser';
+extends 'Net::HTTP::API::Parser';
 
 sub encode {
     my ($self, $content) = @_;

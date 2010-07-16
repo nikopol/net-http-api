@@ -1,4 +1,4 @@
-package MooseX::Net::API::Role::Authentication;
+package Net::HTTP::API::Role::Authentication;
 
 # ABSTRACT: Add authentication informations to request header
 

@@ -1,10 +1,10 @@
-package MooseX::Net::API::Meta::Method::APIMethod;
+package Net::HTTP::API::Meta::Method::APIMethod;
 
 # ABSTRACT: declare API method
 
 use Moose::Role;
-use MooseX::Net::API::Error;
-use MooseX::Net::API::Meta::Method;
+use Net::HTTP::API::Error;
+use Net::HTTP::API::Meta::Method;
 use MooseX::Types::Moose qw/Str ArrayRef/;
 
 has local_net_api_methods => (
@@ -44,7 +44,7 @@ sub remove_net_api_method {
 before add_net_api_method => sub {
     my ($meta, $name) = @_;
     if ($meta->_find_net_api_method_by_name(sub {/^$name$/})) {
-        die MooseX::Net::API::Error->new(
+        die Net::HTTP::API::Error->new(
             reason => "method '$name' is already declared in " . $meta->name);
     }
 };
@@ -58,7 +58,7 @@ sub add_net_api_method {
 
     $meta->add_method(
         $name,
-        MooseX::Net::API::Meta::Method->wrap(
+        Net::HTTP::API::Meta::Method->wrap(
             name         => $name,
             package_name => $meta->name,
             body         => $code,
@@ -74,7 +74,7 @@ after add_net_api_method => sub {
         $name,
         sub {
             my $self = shift;
-            die MooseX::Net::API::Error->new(
+            die Net::HTTP::API::Error->new(
                 reason => "'api_base_url' have not been defined")
               unless $self->api_base_url;
         }

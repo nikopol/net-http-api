@@ -1,4 +1,4 @@
-package MooseX::Net::API::Role::Serialization;
+package Net::HTTP::API::Role::Serialization;
 
 # ABSTRACT: do (de)serialization
 
@@ -6,12 +6,12 @@ use 5.010;
 
 use Try::Tiny;
 use Moose::Role;
-use MooseX::Net::API::Error;
+use Net::HTTP::API::Error;
 
 has serializers => (
     traits     => ['Hash'],
     is         => 'rw',
-    isa        => 'HashRef[MooseX::Net::API::Parser]',
+    isa        => 'HashRef[Net::HTTP::API::Parser]',
     default    => sub { {} },
     auto_deref => 1,
     handles    => {
@@ -34,7 +34,7 @@ sub get_content {
         $content = $self->deserialize($result->content, \@deserialize_order);
 
         if (!$content) {
-            die MooseX::Net::API::Error->new(
+            die Net::HTTP::API::Error->new(
                 reason     => "can't deserialize content",
                 http_error => $result,
             );
@@ -67,7 +67,7 @@ sub serialize {
 sub _load_serializer {
     my $self   = shift;
     my $format = shift || $self->api_format;
-    my $parser = "MooseX::Net::API::Parser::" . uc($format);
+    my $parser = "Net::HTTP::API::Parser::" . uc($format);
     if (Class::MOP::load_class($parser)) {
         my $o = $parser->new;
         $self->_add_serializer($format => $o);

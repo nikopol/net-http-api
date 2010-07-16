@@ -1,6 +1,6 @@
-package MooseX::Net::API::Parser;
+package Net::HTTP::API::Parser;
 
-# ABSTRACT: base class for all MooseX::Net::API::Parser
+# ABSTRACT: base class for all Net::HTTP::API::Parser
 
 use Moose;
 

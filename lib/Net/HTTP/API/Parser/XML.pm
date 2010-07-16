@@ -1,10 +1,10 @@
-package MooseX::Net::API::Parser::XML;
+package Net::HTTP::API::Parser::XML;
 
 # ABSTRACT: Parse XML result
 
 use XML::Simple;
 use Moose;
-extends 'MooseX::Net::API::Parser';
+extends 'Net::HTTP::API::Parser';
 
 has _xml_parser => (
     is      => 'rw',

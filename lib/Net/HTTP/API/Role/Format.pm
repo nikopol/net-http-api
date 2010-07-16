@@ -1,4 +1,4 @@
-package MooseX::Net::API::Role::Format;
+package Net::HTTP::API::Role::Format;
 
 # ABSTRACT: Set appropriate format to request header
 

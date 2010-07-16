@@ -1,4 +1,4 @@
-package MooseX::Net::API::Error;
+package Net::HTTP::API::Error;
 
 # ABSTRACT: Throw error
 
@@ -34,10 +34,10 @@ sub error {
 
 =head1 SYNOPSIS
 
-    MooseX::Net::API::Error->new(reason => "'useragent' is required");
+    Net::HTTP::API::Error->new(reason => "'useragent' is required");
 
 or
 
-    MooseX::Net::API::Error->new()
+    Net::HTTP::API::Error->new()
 
 =head1 DESCRIPTION

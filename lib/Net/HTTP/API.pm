@@ -1,4 +1,4 @@
-package MooseX::Net::API;
+package Net::HTTP::API;
 
 # ABSTRACT: Easily create client for net API
 
@@ -32,18 +32,18 @@ sub init_meta {
 
     my $meta = Moose::Util::MetaRole::apply_metaroles(
         for_class       => $for,
-        metaclass_roles => ['MooseX::Net::API::Meta::Class'],
+        metaclass_roles => ['Net::HTTP::API::Meta::Class'],
     );
 
     Moose::Util::MetaRole::apply_base_class_roles(
         for   => $for,
         roles => [
             qw/
-              MooseX::Net::API::Role::UserAgent
-              MooseX::Net::API::Role::Format
-              MooseX::Net::API::Role::Authentication
-              MooseX::Net::API::Role::Serialization
-              MooseX::Net::API::Role::Request
+              Net::HTTP::API::Role::UserAgent
+              Net::HTTP::API::Role::Format
+              Net::HTTP::API::Role::Authentication
+              Net::HTTP::API::Role::Serialization
+              Net::HTTP::API::Role::Request
               /
         ],
     );
@@ -56,7 +56,7 @@ sub init_meta {
 =head1 SYNOPSIS
 
     package My::Net::API;
-    use MooseX::Net::API;
+    use Net::HTTP::API;
 
     # we declare an API, the base_url is http://exemple.com/api
     # the format is json and it will be append to the query
@@ -105,7 +105,7 @@ sub init_meta {
 
 =head1 DESCRIPTION
 
-MooseX::Net::API is a module to help to easily create a client for a web API.
+Net::HTTP::API is a module to help to easily create a client for a web API.
 
 This module is heavily inspired by what L<Net::Twitter> does.
 
@@ -115,15 +115,15 @@ The following roles are added to your class:
 
 =over 4
 
-=item B<MooseX::Net::API::Role::UserAgent>
+=item B<Net::HTTP::API::Role::UserAgent>
 
-=item B<MooseX::Net::API::Role::Format>
+=item B<Net::HTTP::API::Role::Format>
 
-=item B<MooseX::Net::API::Role::Authentication>
+=item B<Net::HTTP::API::Role::Authentication>
 
-=item B<MooseX::Net::API::Role::Serialization>
+=item B<Net::HTTP::API::Role::Serialization>
 
-=item B<MooseX::Net::API::Role::Request>
+=item B<Net::HTTP::API::Role::Request>
 
 =back
 

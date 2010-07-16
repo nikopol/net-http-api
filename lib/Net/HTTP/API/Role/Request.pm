@@ -1,10 +1,10 @@
-package MooseX::Net::API::Role::Request;
+package Net::HTTP::API::Role::Request;
 
 # ABSTRACT: make HTTP request
 
 use Moose::Role;
 use HTTP::Request;
-use MooseX::Net::API::Error;
+use Net::HTTP::API::Error;
 use MooseX::Types::URI qw(Uri);
 
 has api_base_url => (
@@ -16,7 +16,7 @@ has api_base_url => (
         my $self         = shift;
         my $api_base_url = $self->meta->get_api_option('api_base_url');
         if (!$api_base_url) {
-            die MooseX::Net::API::Error->new(
+            die Net::HTTP::API::Error->new(
                 reason => "'api_base_url' have not been defined");
         }
         $api_base_url;
@@ -44,7 +44,7 @@ sub http_request {
         $request->content($content);
     }
     else {
-        die MooseX::Net::API::Error->new(reason => "$method is not defined");
+        die Net::HTTP::API::Error->new(reason => "$method is not defined");
     }
 
     $request->header(
