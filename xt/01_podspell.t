@@ -7,4 +7,4 @@ all_pod_files_spelling_ok('lib');
 __DATA__
 franck cuny
 franck.cuny@rtgi.fr
-MooseX::Net::API
+Net::HTTP::API
