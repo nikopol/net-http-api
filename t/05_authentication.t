@@ -3,7 +3,7 @@ use warnings;
 use Test::More;
 
 package test::auth;
-use MooseX::Net::API;
+use Net::HTTP::API;
 
 net_api_declare fake_auth => (
     api_base_url          => 'http://localhost',
@@ -23,7 +23,7 @@ sub my_auth {
 }
 
 package test::auth::simple;
-use MooseX::Net::API;
+use Net::HTTP::API;
 
 net_api_declare fake_auth => (
     api_base_url          => 'http://localhost',

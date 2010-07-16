@@ -11,7 +11,7 @@ use TestAPI;
 ok my $api = TestAPI->new(), 'api object created';
 
 for my $role (qw/UserAgent Format Authentication Serialization Request/) {
-    ok $api->meta->does_role('MooseX::Net::API::Role::' . $role),
+    ok $api->meta->does_role('Net::HTTP::API::Role::' . $role),
       'does role ' . $role;
 }
 

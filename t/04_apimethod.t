@@ -2,10 +2,10 @@ use strict;
 use warnings;
 use Test::More;
 use Test::Exception;
-use MooseX::Net::API::Meta::Method;
+use Net::HTTP::API::Meta::Method;
 
 dies_ok {
-    MooseX::Net::API::Meta::Method->wrap(
+    Net::HTTP::API::Meta::Method->wrap(
         name         => 'test_method',
         package_name => 'test::api',
         body         => sub {1},
@@ -13,7 +13,7 @@ dies_ok {
 }
 "missing some params";
 
-ok my $method = MooseX::Net::API::Meta::Method->wrap(
+ok my $method = Net::HTTP::API::Meta::Method->wrap(
     name         => 'test_method',
     package_name => 'test::api',
     body         => sub {1},
@@ -24,7 +24,7 @@ ok my $method = MooseX::Net::API::Meta::Method->wrap(
 
 is $method->method, 'GET', 'method is GET';
 
-ok $method = MooseX::Net::API::Meta::Method->wrap(
+ok $method = Net::HTTP::API::Meta::Method->wrap(
     name         => 'test_method',
     package_name => 'test::api',
     method       => 'GET',

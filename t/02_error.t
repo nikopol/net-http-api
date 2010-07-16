@@ -4,7 +4,7 @@ use Test::More;
 use Test::Exception;
 
 package test::api::missing_api_base_url;
-use MooseX::Net::API;
+use Net::HTTP::API;
 
 net_api_method user => (method => 'GET', path => '/user/');
 

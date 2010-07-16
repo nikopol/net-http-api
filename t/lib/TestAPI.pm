@@ -1,5 +1,5 @@
 package TestAPI;
-use MooseX::Net::API;
+use Net::HTTP::API;
 
 use HTTP::Response;
 
