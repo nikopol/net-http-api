@@ -100,5 +100,3 @@ sub _load_serializer {
 =item B<deserialize>
 
 =back
-99:	hit eof while in pod documentation (no =cut seen)
-	this can cause trouble with some pod utilities

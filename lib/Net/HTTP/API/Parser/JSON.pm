@@ -6,14 +6,21 @@ use JSON;
 use Moose;
 extends 'Net::HTTP::API::Parser';
 
+has _json_parser => (
+    is      => 'rw',
+    isa     => 'JSON',
+    lazy    => 1,
+    default => sub { JSON->new->allow_nonref },
+);
+
 sub encode {
     my ($self, $content) = @_;
-    return JSON::encode_json($content);
+    $self->_json_parser->encode($content);
 }
 
 sub decode {
     my ($self, $content) = @_;
-    return JSON::decode_json($content);
+    $self->_json_parser->decode($content);
 }
 
 1;

@@ -63,5 +63,3 @@ after BUILDALL => sub {
 =item B<api_username>
 
 =back
-64:	hit eof while in pod documentation (no =cut seen)
-	this can cause trouble with some pod utilities
