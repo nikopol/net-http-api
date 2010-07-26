@@ -17,7 +17,7 @@ subtype UriPath
 
 enum Method => qw(HEAD GET POST PUT DELETE);
 
-has path   => (is => 'ro', isa => 'UriPath', required => 1, coerce => 1);
+has path   => (is => 'ro', isa => 'UriPath', required => 1);
 has method => (is => 'ro', isa => 'Method', required => 1);
 has description => (is => 'ro', isa => 'Str',  predicate => 'has_description');
 has strict      => (is => 'ro', isa => 'Bool', default   => 1,);
