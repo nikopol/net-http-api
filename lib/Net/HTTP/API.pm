@@ -4,6 +4,7 @@ package Net::HTTP::API;
 
 use Moose;
 use Moose::Exporter;
+use Moose::Util::MetaRole;
 
 our $VERSION = '0.11';
 
@@ -31,8 +32,10 @@ sub init_meta {
     Moose->init_meta(%options);
 
     my $meta = Moose::Util::MetaRole::apply_metaroles(
-        for_class       => $for,
-        metaclass_roles => ['Net::HTTP::API::Meta::Class'],
+        for       => $for,
+        class_metaroles => {
+            class => ['Net::HTTP::API::Meta::Class'],
+        },
     );
 
     Moose::Util::MetaRole::apply_base_class_roles(
