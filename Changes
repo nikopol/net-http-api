@@ -1,5 +1,9 @@
 Revision history for Perl extension Net::HTTP::API
 
+0.14    Mon 26 Jul 2010 09:15:44 AM CEST
+        - remove coerce on UriPath
+        - use new Moose::Util::MetaRole
+
 0.13    Sun 18 Jul 2010 09:00:57 AM CEST
         - rename from MooseX::Net::API to Net::HTTP::API
         - remove http-console (now at net-http-console)
