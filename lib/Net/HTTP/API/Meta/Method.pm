@@ -197,7 +197,8 @@ sub _build_path {
         if (my $value = delete $args->{$match}) {
             $path =~ s/(?:\$|:)$match/$value/;
         }
-        if ($max_iter > $i) {
+        # TODO write test!
+        if ($max_iter < $i) {
             $path =~ s/\/(?:(\$|\:).*)?$//;
         }
     }
