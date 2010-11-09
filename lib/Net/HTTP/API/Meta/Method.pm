@@ -123,7 +123,7 @@ sub wrap {
                 && !$method->find_expected_code(sub {/$code/}))
             {
                 die Net::HTTP::API::Error->new(
-                    reason     => "unexpected code",
+                    reason     => 'unexpected code ('.$code.':'.$result->message.')',
                     http_error => $result
                 );
             }
